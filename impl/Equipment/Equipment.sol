@@ -39,6 +39,28 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         _mintBatch(attrIds, names, symbols, uris);
     }
 
+    // @dev 批量创建装备（对于新角色，进行初始化创建时调用该接口）
+    function batchMintEquipment(uint256 characterId, uint8 maxPosition) external onlyDirectory {
+        // 1、指定角色创建装备，本合约需要维护角色与装备的关系；
+        // 2、每个position对应的装备 tokenId 需要进行保存；
+        // 3、每个装备的算力值需要体现到装备属性中去；
+        // 4、思考：幸运石的加成，是否由调用方传入，幸运石管控在 EverLight 合约中;
+    }
+
+    // @dev 创建装备，为指定角色创建指定位置的装备
+    function mintEquipment(uint256 characterId, uint8 position) external onlyDirectory {
+        // 1、记录新装备与角色关系；
+        // 2、记录新装备与处于的位置；
+        // 3、新装备的属性按默认值处理；
+        // 注意：装备的特有属性或者加成的处理需要进行考虑；
+    }
+
+    // @dev 销毁指定ID的装备
+    function burnEquipment(uint256 tokenId) external onlyDirectory {
+        // 1.销毁指定的 tokenId，对应属性信息也删除
+        // 2.与角色的绑定关系也需要删除
+    }
+
     function isApprovedOrOwner(address spender, uint256 tokenId) external view virtual returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }

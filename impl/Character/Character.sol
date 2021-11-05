@@ -37,6 +37,49 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         _mintBatch(attrIds, names, symbols, uris);
     }
 
+
+    // @dev 创建一个新的角色
+    // 1.角色的ID和接收者由调用方指定；
+    // 2.严格限制调用者；
+    // 3.创建角色后需要进行各属性的初始化；
+    function mintCharacter(address recipient, uint256 tokenId, string memory name, EOCCUPATION occupation) external onlyDirectory {
+
+    }
+
+    // @dev 为角色新增幸运值
+    function increateLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
+        // 新增角色的幸运值属性的点数；
+        // 后续点数需要提供给装备合约查询，用于在装备生成时增加稀有度；
+    }
+
+    // @dev 重置指定角色的幸运点数
+    function resetLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
+       
+    }
+
+    // @dev 获取角色的幸运属性的点数
+    function getLucklyPoint(uint256 tokenId) external view virtual returns (uint256) {
+        
+    }
+
+    // @dev 使用幸运石
+    function useLuckyStone(uint256[] memory tokenId) external override {
+        // 幸运石为特殊的装备
+        // 幸运石使用后角色的幸运值增加
+        // 对应的装备需要销毁
+        /*for (uint i=0; i<tokenId.length; ++i) {
+            //require(_tokenOwnOf(tokenId[i]) == tx.origin, "Not owner");
+            require(_erc721Proxy.ownerOf(tokenId[i]) == tx.origin, "stone !owner");
+            require(_tokenList[tokenId[i]]._position == 99, "Not lucky stone");
+
+            ++_accountList[tx.origin]._luckyNum;
+
+            // burn luck stone token
+            _erc721Proxy.burnBy(tokenId[i]);
+            delete _tokenList[tokenId[i]];
+        }*/
+    }
+
     function isApprovedOrOwner(address spender, uint256 tokenId) external view virtual returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }

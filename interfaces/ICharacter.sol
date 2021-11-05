@@ -45,4 +45,24 @@ interface ICharacter {
     function increaseAttr(uint256 tokenId, uint256 attrId, uint256 value) external;
     function decreaseAttr(uint256 tokenId, uint256 attrId, uint256 value) external;
     function setExtendAttr(uint256 tokenId, string memory key, string memory value) external;
+
+
+    function mintCharacter(address recipient, uint256 tokenId, string memory name, EOCCUPATION occupation) external;
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
