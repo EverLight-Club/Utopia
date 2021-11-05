@@ -17,8 +17,8 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     uint256 _totalToken;
 
     function initialize() public initializer {
-        __ERC3664_init_unchained();
-        __ERC721Enumerable_init_unchained("Utopia Equipment Token", "UET");
+        __ERC3664_init();
+        __ERC721Enumerable("Utopia Equipment Token", "UET");
         __DirectoryBridge_init();
         __Equipment_init_unchained();
 	}

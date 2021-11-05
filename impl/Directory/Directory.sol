@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "../../proxy/Initializable.sol";
-import "../../utils/OwnableUpgradeable.sol";
+import "../../proxy/OwnableUpgradeable.sol";
 import "../../interfaces/IDirectory.sol";
 
 contract Directory is IDirectory, Initializable, OwnableUpgradeable {

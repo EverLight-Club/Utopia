@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../../utils/OwnableUpgradeable.sol";
+import "../../proxy/OwnableUpgradeable.sol";
 import "../../interfaces/IDirectory.sol";
 
 abstract contract DirectoryBridge is OwnableUpgradeable {

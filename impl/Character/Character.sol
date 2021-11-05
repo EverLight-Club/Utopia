@@ -16,9 +16,11 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
     uint256 _totalToken;
 
     function initialize() public initializer {
-        __ERC3664_init_unchained();
-        __ERC721Enumerable_init_unchained("Utopia Character Token", "UCT");
+        // 对继承的合约进行初始化，同时对完成自身合约的初始化
+        __ERC3664_init();
+        __ERC721Enumerable_init("Utopia Character Token", "UCT");
         __DirectoryBridge_init();
+        
         __Character_init_unchained();
 	}
 
