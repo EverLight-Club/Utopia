@@ -73,21 +73,53 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
 
     // @dev 创建幸运石
     function mintLuckStone(address recipient) external onlyDirectory {
-        uint256 tokenId = ++_totalToken;
-        _safeMint(recipient, tokenId);
-        _initAttribute(tokenId, 99, "Luck Stone", 0, 0, 1);
+        _mintEquipment(recipient, 99, "Luck Stone", 0, 0, 1);
     }
 
-    function isLucklyStone(uint256 tokenId) external view override returns (bool) {
+    function isLucklyStone(uint256 tokenId) public view override returns (bool) {
         uint256 position, _ = getAttr(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION));
         return position == 99;
     }
 
     // @dev 随机创建装备，为指定角色创建指定位置的装备
-    function mintRandomEquipment(address recipient) external onlyDirectory {
+    // position: random
+    function mintRandomEquipment(address recipient, uint8 position) external onlyDirectory {
         // 1、随机创建装备，各项数据具有一定的随机性；
         // 2、随机逻辑参考 _getRandom(); 函数
         // 思考：属性中需要随机的部分，要参考 _partsInfo 进行对比
+        // create random number and plus lucky number on msg.sender
+        IEverLight everLight = IEverLight(getAddress(CONTRACT_TYPE.EVER_LIGHT));
+        uint256 luckNum = _getRandom(uint256(position).toString()) % everLight.queryPartsCount();
+        /*if (luckNum >= _partsInfo._partsCount[position]) {
+          luckNum = _partsInfo._partsCount[position] - 1;
+        }*/
+
+        // find the parts on position by lucky number
+        //tokenId = ++_config._currentTokenId;
+        for(uint8 rare = 0; rare < 256; ++rare) {
+            if (luckNum >= character.queryPartsTypeCount(position, rare)) {
+                luckNum -= character.queryPartsTypeCount(position, rare);
+                continue;
+            }
+
+            // calc rand power by base power and +10%
+            uint32 randPower = uint32(everLight.queryPower(position, rare) <= 10 ?
+                                    _getRandom(uint256(256).toString()) % 1 :
+                                    _getRandom(uint256(256).toString()) % (everLight.queryPower(position, rare) / 10));
+
+
+            // create token information
+            //_tokenList[tokenId] = LibEverLight.TokenInfo(tokenId, /*tx.origin,*/ position, rare, _partsInfo._partsTypeList[position][rare][luckNum]._name,
+            //                                           _partsInfo._partsTypeList[position][rare][luckNum]._suitId, 
+            //                                           _partsInfo._partsPowerList[position][rare] + randPower, 1, false, 0);
+            uint32 suitId, string memory suitName = character.queryPartsType(position, rare, luckNum);
+            _mintEquipment(recipient, position, suitName, suitId, rare, 1);
+            break;
+        }
+
+        // clear lucky value on msg.sender, only used once
+        // todo: 此处还未使用角色上的幸运值，考虑是否加上
+        //_accountList[tx.origin]._luckyNum = 0;
     }
 
     // @dev 销毁指定ID的装备
@@ -100,29 +132,29 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     }
 
     // @dev 查看套装ID的所有者
-    function querySuitOwner(uint32 suitId) external view override returns (address) {
+    function querySuitOwner(uint32 suitId) public view override returns (address) {
        return _suitFlag[suitId];
     }
 
     // @dev 查看装备名称是否被使用
-    function isNameExist(string memory name) external view override returns (bool) {
+    function isNameExist(string memory name) public view override returns (bool) {
         return _nameFlag[uint256(keccak256(abi.encodePacked(name)))];
     }
 
-    function isApprovedOrOwner(address spender, uint256 tokenId) external view virtual returns (bool) {
+    function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }
 
-    function getEquipmentList(uint256 characterId) external view override returns (uint256[] memory) {
+    function getEquipmentList(uint256 characterId) public view override returns (uint256[] memory) {
         return _characterEquipments[characterId];
     }
 
-    function getBatchAttr(uint256 tokenId, uint256[] memory attrs) external view override returns (uint256[] memory) {
+    function getBatchAttr(uint256 tokenId, uint256[] memory attrs) public view override returns (uint256[] memory) {
         require(_exists(tokenId), "Token not exist");
         return balanceOfBatch(tokenId, attrIds);
     }
 
-    function getAttr(uint256 tokenId, uint256 attrId) external view override returns (uint256, string memory) {
+    function getAttr(uint256 tokenId, uint256 attrId) public view override returns (uint256, string memory) {
         require(_exists(tokenId), "Token not exist");
         return (balanceOf(tokenId, attrId), string(textOf(tokenId, attrId)));
     }

@@ -52,6 +52,18 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     return _partsPowerList[position][rare];
   }
 
+  function queryPartsCount(uint8 position) public view override returns (uint32 count) {
+    return _partsCount[position];
+  }
+
+  function queryPartsTypeCount(uint8 position, uint8 rare) public view override returns (uint32 count) {
+    return _partsTypeList[position][rare].length;
+  }
+
+  function queryPartsType(uint8 position, uint8 rare, uint256 index) public view override returns (uint32 _suitId, string memory name) {
+    return _partsTypeList[position][rare][index]._suitId, _partsTypeList[position][rare][index].name;
+  }
+
   function querySuitNum() public view override returns (uint256 totalSuitNum) {
     return _config.totalSuitNum;
   }
@@ -132,7 +144,8 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     for (uint i = 0; i < mapTokenList.length; ++i) {
       // burn map token
       _transferERC721(_mapContracts[mapId], tx.origin, address(this), mapTokenList[i]);
-      IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).mintRandomEquipment(msg.sender);
+      uint256 position = uint8(_getRandom(mapTokenList[i].toString()) % _config._maxPosition);
+      IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).mintRandomEquipment(msg.sender, position);
     }
   }
 
