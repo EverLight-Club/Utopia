@@ -58,12 +58,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         ICharacter character = ICharacter(getAddress(CONTRACT_TYPE.CHARACTER));
         require(character.exists(characterId), "characterId not exists");
         require(character.ownerOf(characterId) == tx.origin, "characterId !owner");
-
-        uint256 tokenId = ++_totalToken;
-        _safeMint(recipient, tokenId);
-        // uint256 tokenId, uint256 position, string memory name, uint256 suitId, uint256 rarity
-        //todo: 此处要根据预先定义好的各个position对应的名称进行随机获取，同时随机获取到稀有度
-        _initAttribute(tokenId, i, "", 0, 0, 1);
+        uint256 tokenId = _mintEquipment(recipient, position, "", 0, 0, 1);
         _characterEquipments[characterId].push(tokenId);
         _equipmentCharacters[tokenId] = characterId;
         emit NewEquipment(recipient, characterId, tokenId);
@@ -73,6 +68,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         uint256 tokenId = ++_totalToken;
         _safeMint(recipient, tokenId);
         _initAttribute(tokenId, position, name, suitId, rarity, level);
+        return tokenId;
     }
 
     // @dev 创建幸运石
