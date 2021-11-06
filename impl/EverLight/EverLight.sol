@@ -19,9 +19,11 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
   using Address for address;
   using Strings for uint256;
 
-  LibEverLight.Configurations _config;                         // all configurations
-  mapping(address => LibEverLight.Account) _accountList;       // all packages owned by address
-  mapping(address => address) _recommenderList;                // msg.sender -> recommender
+  LibEverLight.Configurations _config;                            // all configurations
+  mapping(address => LibEverLight.Account) _accountList;          // all packages owned by address
+  mapping(address => address) _recommenderList;                   // msg.sender -> recommender
+  mapping(uint8 => mapping(uint8 => uint32)) _partsPowerList;     // position -> (rare -> power)
+  mapping(uint8 => mapping(uint8 => SuitInfo[])) _partsTypeList;  // position -> (rare -> SuitInfo[])
 
   address public _goverContract;                     // address of governance contract
   address public _tokenContract;                     // address of token contract
@@ -40,6 +42,23 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     _config._decrFee = 25 * 10 ** 18;
     _config._maxPosition = 11;
     _config._luckyStonePrice = 2000;    
+  }
+
+  function queryPower(uint8 position, uint8 rare) external view override returns (uint32 power) {
+    return _partsPowerList[position][rare];
+  }
+
+  function querySuitNum() external view override returns (uint256 totalSuitNum) {
+    return _config.totalSuitNum;
+  }
+
+  function addNewSuit(uint256 suitId, string memory suitName, uint8 position, uint8 rare) external onlyDirectory {
+    _config.totalSuitNum++;
+    _partsTypeList[position][rare].push(LibEverLight.SuitInfo(name, suitId));
+    // todo: 此处决定相关参数存储在哪里
+    //_partsCount[position] = _partsInfo._partsCount[position] + 1;
+    //_nameFlag[nameFlag] = true;
+    emit NewTokenType(tx.origin, position, rare, name, suitId);
   }
 
   function queryAccount(address owner) external view override returns (LibEverLight.Account memory account) {

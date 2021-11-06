@@ -13,6 +13,7 @@ interface IEquipment {
         EQUIPMENT_LEVEL,
         EQUIPMENT_RARITY,
         EQUIPMENT_SUITID,
+        EQUIPMENT_CREATED,
 
         LEVEL_LIMIT,
         SEX_LIMIT,

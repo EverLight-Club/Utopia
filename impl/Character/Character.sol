@@ -145,6 +145,7 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), CONSTITUTION, "", false);
     }
 
+    // 考虑：需要核对场景
     function washPoints(uint256 tokenId) payable external nonReentrant {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
         require(msg.value >= Genesis.WASH_POINTS_PRICE, "Payed too low value");
@@ -175,7 +176,6 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
                                     uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), 
                                     uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)];
         
-        // 为各个属性位置设定值
         uint256[] memory amounts = [1, uint256(occupation), uint256(sex), 1, 0, 0, INIT_ATTR[occupation][0], INIT_ATTR[occupation][1], INIT_ATTR[occupation][2], INIT_ATTR[occupation][3], 0, 0];
         
         bytes[] memory texts = [bytes(name), "", "", "", "", "", "", "", "", "", "", ""];
@@ -186,7 +186,7 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
     function _upLevel(uint256 tokenId) internal {
         while (true) {
             uint256 currExperience = balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_EXPERIENCE));
-            uint256 currLevel = balanceOf(tokenId, LEVEL);
+            uint256 currLevel = balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LEVEL));
             uint256 upgradeExperience = 30 * currLevel ** 2 + 150 * currLevel - 80;
 
             if (currExperience < upgradeExperience) {
