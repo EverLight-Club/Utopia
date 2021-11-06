@@ -24,9 +24,9 @@ abstract contract DirectoryBridge is OwnableUpgradeable {
         return _directory;
     }
 
-    function setDirectory(address directory) external onlyOwner {
-        require(directory != address(0), "directory is the zero address");
-        _directory = directory;
+    function setDirectory(address directoryAddr) external onlyOwner {
+        require(directoryAddr != address(0), "directory is the zero address");
+        _directory = directoryAddr;
 
         afterSetDirectory();
     }

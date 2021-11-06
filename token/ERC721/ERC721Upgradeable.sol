@@ -16,7 +16,7 @@ import "../ERC165/ERC165Upgradeable.sol";
  * the Metadata extension, but not including the Enumerable extension, which is available separately as
  * {ERC721Enumerable}.
  */
-contract ERC721Upgradeable is Initializable, Context, ERC165Upgradeable, IERC721Upgradeable, IERC721MetadataUpgradeable {
+contract ERC721Upgradeable is Initializable, Context, ERC165Upgradeable, IERC721MetadataUpgradeable {
     using Address for address;
     using Strings for uint256;
 
