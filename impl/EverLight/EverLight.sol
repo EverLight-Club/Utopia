@@ -13,6 +13,7 @@ import '../../utils/Strings.sol';
 import '../../utils/Address.sol';
 import "../../interfaces/ICharacter.sol";
 import "../../interfaces/IEquipment.sol";
+import "./LibEverLight.sol";
 
 contract EverLight is DirectoryBridge, ReentrancyGuard {
 
@@ -22,8 +23,11 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
   LibEverLight.Configurations _config;                            // all configurations
   mapping(address => LibEverLight.Account) _accountList;          // all packages owned by address
   mapping(address => address) _recommenderList;                   // msg.sender -> recommender
+  
   mapping(uint8 => mapping(uint8 => uint32)) _partsPowerList;     // position -> (rare -> power)
   mapping(uint8 => mapping(uint8 => SuitInfo[])) _partsTypeList;  // position -> (rare -> SuitInfo[])
+  mapping(uint8 => uint32) _partsCount;                           // position -> count
+  mapping(uint8 => string) _rareColor;                            // rare -> color
 
   address public _goverContract;                     // address of governance contract
   address public _tokenContract;                     // address of token contract
@@ -44,11 +48,11 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     _config._luckyStonePrice = 2000;    
   }
 
-  function queryPower(uint8 position, uint8 rare) external view override returns (uint32 power) {
+  function queryPower(uint8 position, uint8 rare) public view override returns (uint32 power) {
     return _partsPowerList[position][rare];
   }
 
-  function querySuitNum() external view override returns (uint256 totalSuitNum) {
+  function querySuitNum() public view override returns (uint256 totalSuitNum) {
     return _config.totalSuitNum;
   }
 
@@ -56,33 +60,24 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     _config.totalSuitNum++;
     _partsTypeList[position][rare].push(LibEverLight.SuitInfo(name, suitId));
     // todo: 此处决定相关参数存储在哪里
-    //_partsCount[position] = _partsInfo._partsCount[position] + 1;
+    _partsCount[position] = _partsCount[position] + 1;
     //_nameFlag[nameFlag] = true;
     emit NewTokenType(tx.origin, position, rare, name, suitId);
   }
 
-  function queryAccount(address owner) external view override returns (LibEverLight.Account memory account) {
+  function queryAccount(address owner) public view override returns (LibEverLight.Account memory account) {
     account = _accountList[owner];
   }
 
-  function queryConfigurations() external view override returns (LibEverLight.Configurations memory configurations) {
+  function queryConfigurations() public view override returns (LibEverLight.Configurations memory configurations) {
     configurations = _config;
   }
 
-  /*function queryCharacterCount() external view override returns (uint32) {
-    return _config._totalCreateNum;
-  }*/
-
-  /*function queryLuckyStonePrice() external view override returns (uint32) {
-    return _config._luckyStonePrice;
-  }*/
-
-  function queryMapInfo() external view override returns (address[] memory addresses) {
+  function queryMapInfo() public view override returns (address[] memory addresses) {
     addresses = _mapContracts;
   }
 
-  /// 创建角色
-  function mint(string memory name, uint256 occupation /* 职业 */, address recommender /* 推荐人 */) external override payable {
+  function mint(string memory name, uint256 occupation, address recommender) external override payable {
     // one address can only apply once
     require(!_accountList[tx.origin]._creationFlag, "Only once");
 
@@ -109,8 +104,6 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
       payable(tx.origin).transfer(msg.value - applyFee);
     }
 
-    // 判断当前推荐人是否是有效的，然后按照比例进行分配
-    // 一级推荐 5%，直属推荐 15% => 按照参数设定
     if(recommender != address(0) && _accountList[recommender]._creationFlag) {
       address  preRecomender = _recommenderList[recommender];
       if(preRecomender != address(0)){ // 有上级推荐
@@ -131,25 +124,18 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     // todo: 角色初始化之后还需要进行装备信息初始化
     // todo: 批量调用装备合约，完成各position装备的初始化（包含幸运值的使用，通过参数传入，参考：_createCharacter）
     ICharacter(getAddress(CONTRACT_TYPE.CHARACTER)).mintCharacter(msg.sender, recommender, characterId, name, occupation);
-    IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).batchMintEquipment(msg.sender, characterId, _config._maxPosition);
+    IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).mintBatchEquipment(msg.sender, characterId, _config._maxPosition);
   }
 
-  // @dev ELMT 兑换装备
-  // todo: 装备兑换由 EverLight 提供入口，调用装备合约完成新装备的创建；
   function exchangeToken(uint32 mapId, uint256[] memory mapTokenList) external override {
     require(mapId < _mapContracts.length, "Invalid map");
-    // logic:
-    // 1、直接调用装备合约完成装备创建，装备归属于当前调用者；
-    // 2、装备的生成满足随机性；
-
-    for (uint i=0; i<mapTokenList.length; ++i) {
+    for (uint i = 0; i < mapTokenList.length; ++i) {
       // burn map token
       _transferERC721(_mapContracts[mapId], tx.origin, address(this), mapTokenList[i]);
       IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).mintRandomEquipment(msg.sender);
     }
   }
 
-  // @dev 购买幸运石
   function buyLuckyStone(uint8 count) external override {
     require(_tokenContract != address(0), "Not open");
 
@@ -157,33 +143,20 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     uint256 totalToken = _config._luckyStonePrice * count;
     _transferERC20(_tokenContract, tx.origin, address(this), totalToken);
 
-    // todo: 
-    // 1.转移用于的 ELET 代币金额
-    // 2.调用角色合约，为角色新增幸运值；
-    // 3.幸运值会有多个，同样按照数量加点；
-    // 思考：每次购买的幸运值对应点数为多少？
-
     // mint luck stone 
     for (uint8 i = 0; i < count; ++i) {
-      uint256 newTokenId = ++_config._currentTokenId;
-      //(_tokenList[newTokenId]._tokenId, _tokenList[newTokenId]._position, _tokenList[newTokenId]._name) = (newTokenId, 99, "Lucky Stone");
       IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).mintLuckStone(tx.origin);
     }
   }
 
-  // @dev 使用幸运石
   function useLuckyStone(uint256 characterId, uint256[] memory tokenId) external override {
-    // 幸运石为特殊的装备
-    // 幸运石使用后角色的幸运值增加
-    // 对应的装备需要销毁
     require(ICharacter(getAddress(CONTRACT_TYPE.CHARACTER)).ownerOf(characterId) == msg.sender, "EverLight: !owner");
 
     for (uint i = 0; i < tokenId.length; ++i) {
       require(IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).ownerOf(tokenId[i]) == msg.sender, "EverLight: stone !owner");
       require(IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).isLucklyStone(tokenId[i]), "EverLight: not stone");
       
-      // 角色幸运值增加
-      ICharacter(getAddress(CONTRACT_TYPE.CHARACTER)).increateLucklyPoint(characterId, 1);
+      ICharacter(getAddress(CONTRACT_TYPE.CHARACTER)).attachLucklyPoint(characterId, 1);
       //++_accountList[tx.origin]._luckyNum;
 
       // burn luck stone token

@@ -47,7 +47,7 @@ library LibEverLight {
 
   struct Account {
     bool _creationFlag;                         // if the address has created character
-    uint32 _luckyNum;                           // lucky number of current address
+    //uint32 _luckyNum;                           // lucky number of current address
   }
 
   struct Character {

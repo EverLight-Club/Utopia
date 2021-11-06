@@ -13,14 +13,11 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
 	
     mapping(string => uint256) _characterName;
     mapping(uint256 => mapping(string => string)) _extendAttr;
-    //uint256 _totalToken;
-
+    
     function initialize() public initializer {
-        // 对继承的合约进行初始化，同时对完成自身合约的初始化
         __ERC3664_init();
         __ERC721Enumerable_init("Utopia Character Token", "UCT");
         __DirectoryBridge_init();
-        
         __Character_init_unchained();
 	}
 
@@ -37,11 +34,7 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         _mintBatch(attrIds, names, symbols, uris);
     }
 
-    // @dev 创建一个新的角色
-    // 1.角色的ID和接收者由调用方指定；
-    // 2.严格限制调用者；
-    // 3.创建角色后需要进行各属性的初始化；
-    function mintCharacter(address recipient, address recommender, uint256 tokenId, string memory name, EOCCUPATION occupation /* 职业 */) external onlyDirectory {
+    function mintCharacter(address recipient, address recommender, uint256 tokenId, string memory name, EOCCUPATION occupation) external onlyDirectory {
         require(recipient != 0x0, "recipient invalid");
         require(!_exists(tokenId), "tokenId already exists");
         require(getCharacterId(name) == 0, "Name already exist");
@@ -53,51 +46,38 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         emit NewCharacter(recipient, recommender, tokenId);
     }
 
-    // @dev 为角色新增幸运值
-    function increateLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
-        // 新增角色的幸运值属性的点数；
-        // 后续点数需要提供给装备合约查询，用于在装备生成时增加稀有度；
-        require(!_exists(tokenId), "Character: invalid characterId");
+    function attachLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
+        require(_exists(tokenId), "Character: invalid characterId");
         require(lucklyPoint != 0, "Character: lucklyPoint is zero");
-        //require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
-        
+        require(_isApprovedOrOwner(tx.origin, tokenId), "Not owner or approver");
         _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK), lucklyPoint, "", false);
     }
 
-    // @dev 减少角色的幸运点数
     function burnLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
-        require(!_exists(tokenId), "Character: invalid characterId");
+        require(_exists(tokenId), "Character: invalid characterId");
         require(lucklyPoint != 0, "Character: lucklyPoint is zero");
+        require(_isApprovedOrOwner(tx.origin, tokenId), "Not owner or approver");
         _burn(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK), lucklyPoint);
     }
 
-    // @dev 获取角色的幸运属性的点数
-    function getLucklyPoint(uint256 tokenId) external view virtual returns (uint256) {
-        require(!_exists(tokenId), "Character: tokenId not exists");
+    function getLucklyPoint(uint256 tokenId) public view returns (uint256) {
+        require(_exists(tokenId), "Character: tokenId not exists");
         return balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
     }
 
-    function isApprovedOrOwner(address spender, uint256 tokenId) external view virtual returns (bool) {
+    function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }
 
-    function getCharacterId(string memory name) external view override returns (uint256) {
+    function tokenURI(uint256 tokenId) public view override(ERC721) returns (string memory output) {
+
+    }
+
+    function getCharacterId(string memory name) public view override returns (uint256) {
         return _characterName[name];
     }
 
-    function getCharacters(address owner) external view override returns (uint256[] memory) {
-        if (owner == address(0)) {
-            owner = _msgSender();
-        }
-        uint256 balance = balanceOf(owner);
-        uint256[] memory result = new uint256[](balance);
-        for (uint256 i=0; i < balance; ++i) {
-            result[i] = tokenOfOwnerByIndex(owner, i);
-        }
-        return result;
-    }
-
-    function getAttr(uint256 tokenId, uint256 attrId) external view override returns (uint256, string memory) {
+    function getAttr(uint256 tokenId, uint256 attrId) public view override returns (uint256, string memory) {
         require(_exists(tokenId), "Token not exist");
         return (balanceOf(tokenId, attrId), string(textOf(tokenId, attrId)));
     }
@@ -115,7 +95,6 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
     function increaseAttr(uint256 tokenId, uint256 attrId, uint256 value) external onlyDirectory {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
         _attach(tokenId, attrId, value, "", false);
-
         if (attrId == uint256(CHARACTERATTR.CHARACTER_EXPERIENCE)) {
             _upLevel(tokenId);
         }
@@ -131,6 +110,7 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         _extendAttr[tokenId][key] = value;
     }
 
+    // 思考：考虑使用的场景
     function assignPoints(uint256 tokenId, uint32 strength, uint32 DEXTERITY, uint32 intelligence, uint32 CONSTITUTION) external {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
 

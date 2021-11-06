@@ -8,21 +8,20 @@ import "../Directory/DirectoryBridge.sol";
 import "../../interfaces/IEquipment.sol";
 import "../../interfaces/ICharacter.sol";
 import "../../library/Genesis.sol";
-import "./IEquipmentDB.sol";
 
 contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipment, DirectoryBridge {
 	
     mapping(uint256 => uint256[]) _characterEquipments;         // characterId => []equipmentId
     mapping(uint256 => mapping(string => string)) _extendAttr;  // 
     mapping(uint256 => uint256) _equipmentCharacters;           // equipmentId => characterId
-    mapping(uint32 => address) _suitFlag;       // check suit is exists
-    mapping(uint256 => bool) _nameFlag;         // parts name is exists
+    mapping(uint32 => address) _suitFlag;                       // check suit is exists
+    mapping(uint256 => bool) _nameFlag;                         // parts name is exists
 
-    uint256 _totalToken;
+    uint256 public _totalToken;
 
     function initialize() public initializer {
         __ERC3664_init();
-        __ERC721Enumerable("Utopia Equipment Token", "UET");
+        __ERC721Enumerable_init("Utopia Equipment Token", "UET");
         __DirectoryBridge_init();
         __Equipment_init_unchained();
 	}
@@ -44,11 +43,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     }
 
     // @dev 批量创建装备（对于新角色，进行初始化创建时调用该接口）
-    function batchMintEquipment(address recipient, uint256 characterId, uint8 maxPosition) external onlyDirectory {
-        // 1、指定角色创建装备，本合约需要维护角色与装备的关系；
-        // 2、每个position对应的装备 tokenId 需要进行保存；
-        // 3、每个装备的算力值需要体现到装备属性中去；
-        // 4、思考：幸运石的加成，是否由调用方传入，幸运石管控在 EverLight 合约中;
+    function mintBatchEquipment(address recipient, uint256 characterId, uint8 maxPosition) external onlyDirectory {
         for(uint256 i = 0; i < maxPosition; i++) {
             _mintEquipmentWithCharacter(recipient, characterId, i);
         }
@@ -56,15 +51,13 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
 
     // @dev 创建装备，为指定角色创建指定位置的装备
     function mintEquipment(address recipient, uint256 characterId, uint8 position) external onlyDirectory {
-        // 1、记录新装备与角色关系；
-        // 2、记录新装备与处于的位置；
-        // 3、新装备的属性按默认值处理；
-        // 注意：装备的特有属性或者加成的处理需要进行考虑；
         _mintEquipmentWithCharacter(recipient, characterId, position);
     }
 
     function _mintEquipmentWithCharacter(address recipient, uint256 characterId, uint8 position) internal {
-        require(ICharacter(getAddress(CONTRACT_TYPE.CHARACTER)).exists(characterId), "characterId not exists");
+        ICharacter character = ICharacter(getAddress(CONTRACT_TYPE.CHARACTER));
+        require(character.exists(characterId), "characterId not exists");
+        require(character.ownerOf(characterId) == tx.origin, "characterId !owner");
 
         uint256 tokenId = ++_totalToken;
         _safeMint(recipient, tokenId);
