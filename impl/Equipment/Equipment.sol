@@ -71,7 +71,6 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         return tokenId;
     }
 
-    // @dev 创建幸运石
     function mintLuckStone(address recipient) external onlyDirectory {
         _mintEquipment(recipient, 99, "Luck Stone", 0, 0, 1);
     }
@@ -82,11 +81,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     }
 
     // @dev 随机创建装备，为指定角色创建指定位置的装备
-    // position: random
     function mintRandomEquipment(address recipient, uint8 position) external onlyDirectory {
-        // 1、随机创建装备，各项数据具有一定的随机性；
-        // 2、随机逻辑参考 _getRandom(); 函数
-        // 思考：属性中需要随机的部分，要参考 _partsInfo 进行对比
         // create random number and plus lucky number on msg.sender
         IEverLight everLight = IEverLight(getAddress(CONTRACT_TYPE.EVER_LIGHT));
         uint256 luckNum = _getRandom(uint256(position).toString()) % everLight.queryPartsCount();
@@ -103,15 +98,9 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
             }
 
             // calc rand power by base power and +10%
-            uint32 randPower = uint32(everLight.queryPower(position, rare) <= 10 ?
-                                    _getRandom(uint256(256).toString()) % 1 :
-                                    _getRandom(uint256(256).toString()) % (everLight.queryPower(position, rare) / 10));
-
-
-            // create token information
-            //_tokenList[tokenId] = LibEverLight.TokenInfo(tokenId, /*tx.origin,*/ position, rare, _partsInfo._partsTypeList[position][rare][luckNum]._name,
-            //                                           _partsInfo._partsTypeList[position][rare][luckNum]._suitId, 
-            //                                           _partsInfo._partsPowerList[position][rare] + randPower, 1, false, 0);
+            //uint32 randPower = uint32(everLight.queryPower(position, rare) <= 10 ?
+            //                        _getRandom(uint256(256).toString()) % 1 :
+            //                        _getRandom(uint256(256).toString()) % (everLight.queryPower(position, rare) / 10));
             uint32 suitId, string memory suitName = character.queryPartsType(position, rare, luckNum);
             _mintEquipment(recipient, position, suitName, suitId, rare, 1);
             break;
@@ -124,8 +113,6 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
 
     // @dev 销毁指定ID的装备
     function burnEquipment(uint256 tokenId) external onlyDirectory {
-        // 1.销毁指定的 tokenId，对应属性信息也删除
-        // 2.与角色的绑定关系也需要删除
         require(exists(tokenId), "!exists");
         require(ownerOf(tokenId) == tx.origin, "!owner");
         _burn(tokenId); // burn 721, not 3664
@@ -162,22 +149,6 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     function getExtendAttr(uint256 tokenId, string memory key) external view override returns (string memory) {
         require(_exists(tokenId), "Token not exist");
         return _extendAttr[tokenId][key];
-    }
-
-    function equipmentBouns(uint256 characterId, uint256[] memory attrIds) external view override returns (uint256[] memory) {
-        require(attrIds.length > 0, "Empty attributes");
-        uint256[] memory bonus = new uint256[](attrids.length);
-        uint256[] storage equipmentList = _characterEquipments[characterId];
-        for (uint i=0; i<equipmentList.length; ++i) {
-            if (equipmentList[i] == 0) {
-                continue;
-            }
-            uint256[] memory bonusValue = balanceOfBatch(equipmentList[i], attrIds);
-            for (uint j=0; j<attrIds.length; ++j) {
-                bonus[j] += bonusValue[j];
-            }
-        }
-        return bonus;
     }
 
     function setExtendAttr(uint256 tokenId, string memory key, string memory value) external onlyDirectory {
