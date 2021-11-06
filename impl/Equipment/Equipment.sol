@@ -40,7 +40,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     }
 
     // @dev 批量创建装备（对于新角色，进行初始化创建时调用该接口）
-    function batchMintEquipment(uint256 characterId, uint8 maxPosition) external onlyDirectory {
+    function batchMintEquipment(address recipient, uint256 characterId, uint8 maxPosition) external onlyDirectory {
         // 1、指定角色创建装备，本合约需要维护角色与装备的关系；
         // 2、每个position对应的装备 tokenId 需要进行保存；
         // 3、每个装备的算力值需要体现到装备属性中去；
@@ -48,17 +48,44 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     }
 
     // @dev 创建装备，为指定角色创建指定位置的装备
-    function mintEquipment(uint256 characterId, uint8 position) external onlyDirectory {
+    function mintEquipment(address recipient, uint256 characterId, uint8 position) external onlyDirectory {
         // 1、记录新装备与角色关系；
         // 2、记录新装备与处于的位置；
         // 3、新装备的属性按默认值处理；
         // 注意：装备的特有属性或者加成的处理需要进行考虑；
     }
 
+    // @dev 创建幸运石
+    function mintLuckStone(address recipient) external onlyDirectory {
+        
+    }
+
+    function isLucklyStone(uint256 tokenId) external view override returns (bool) {
+        return true;
+    }
+
+    // @dev 随机创建装备，为指定角色创建指定位置的装备
+    function mintRandomEquipment(address recipient) external onlyDirectory {
+        // 1、随机创建装备，各项数据具有一定的随机性；
+        // 2、随机逻辑参考 _getRandom(); 函数
+    }
+
     // @dev 销毁指定ID的装备
     function burnEquipment(uint256 tokenId) external onlyDirectory {
         // 1.销毁指定的 tokenId，对应属性信息也删除
         // 2.与角色的绑定关系也需要删除
+    }
+
+    // 思考：套装的数据存储在何处
+    function querySuitOwner(uint32 suitId) external view override returns (address) {
+        //todo: 调用DB的接口查询
+        return 0x0;
+    }
+
+    function isNameExist(string memory name) external view override returns (bool) {
+        //todo: 调用DB接口查询
+        //return _partsInfo._nameFlag[uint256(keccak256(abi.encodePacked(name)))];
+        return true;
     }
 
     function isApprovedOrOwner(address spender, uint256 tokenId) external view virtual returns (bool) {

@@ -6,6 +6,11 @@ import "../../proxy/OwnableUpgradeable.sol";
 import "../../interfaces/IDirectory.sol";
 
 abstract contract DirectoryBridge is OwnableUpgradeable {
+
+    enum CONTRACT_TYPE {
+        CHARACTER, EVER_LIGHT, EQUIPMENT, EVER_LIGHT_DB
+    }
+
     address private _directory;
 
     function __DirectoryBridge_init() internal initializer {

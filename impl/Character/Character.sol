@@ -13,7 +13,7 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
 	
     mapping(string => uint256) _characterName;
     mapping(uint256 => mapping(string => string)) _extendAttr;
-    uint256 _totalToken;
+    //uint256 _totalToken;
 
     function initialize() public initializer {
         // 对继承的合约进行初始化，同时对完成自身合约的初始化
@@ -37,47 +37,44 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         _mintBatch(attrIds, names, symbols, uris);
     }
 
-
     // @dev 创建一个新的角色
     // 1.角色的ID和接收者由调用方指定；
     // 2.严格限制调用者；
     // 3.创建角色后需要进行各属性的初始化；
-    function mintCharacter(address recipient, uint256 tokenId, string memory name, EOCCUPATION occupation) external onlyDirectory {
+    function mintCharacter(address recipient, address recommender, uint256 tokenId, string memory name, EOCCUPATION occupation /* 职业 */) external onlyDirectory {
+        require(recipient != 0x0, "recipient invalid");
+        require(!_exists(tokenId), "tokenId already exists");
+        require(getCharacterId(name) == 0, "Name already exist");
 
+        _characterName[name] = tokenId;
+        _safeMint(recipient, tokenId);
+        
+        _initAttribute(tokenId, name, occupation, 0);
+        emit NewCharacter(recipient, recommender, tokenId);
     }
 
     // @dev 为角色新增幸运值
     function increateLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
         // 新增角色的幸运值属性的点数；
         // 后续点数需要提供给装备合约查询，用于在装备生成时增加稀有度；
+        require(!_exists(tokenId), "Character: invalid characterId");
+        require(lucklyPoint != 0, "Character: lucklyPoint is zero");
+        //require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
+        
+        _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK), lucklyPoint, "", false);
     }
 
-    // @dev 重置指定角色的幸运点数
-    function resetLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
-       
+    // @dev 减少角色的幸运点数
+    function burnLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
+        require(!_exists(tokenId), "Character: invalid characterId");
+        require(lucklyPoint != 0, "Character: lucklyPoint is zero");
+        _burn(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK), lucklyPoint);
     }
 
     // @dev 获取角色的幸运属性的点数
     function getLucklyPoint(uint256 tokenId) external view virtual returns (uint256) {
-        
-    }
-
-    // @dev 使用幸运石
-    function useLuckyStone(uint256[] memory tokenId) external override {
-        // 幸运石为特殊的装备
-        // 幸运石使用后角色的幸运值增加
-        // 对应的装备需要销毁
-        /*for (uint i=0; i<tokenId.length; ++i) {
-            //require(_tokenOwnOf(tokenId[i]) == tx.origin, "Not owner");
-            require(_erc721Proxy.ownerOf(tokenId[i]) == tx.origin, "stone !owner");
-            require(_tokenList[tokenId[i]]._position == 99, "Not lucky stone");
-
-            ++_accountList[tx.origin]._luckyNum;
-
-            // burn luck stone token
-            _erc721Proxy.burnBy(tokenId[i]);
-            delete _tokenList[tokenId[i]];
-        }*/
+        require(!_exists(tokenId), "Character: tokenId not exists");
+        return balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
     }
 
     function isApprovedOrOwner(address spender, uint256 tokenId) external view virtual returns (bool) {
@@ -92,14 +89,11 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         if (owner == address(0)) {
             owner = _msgSender();
         }
-        
         uint256 balance = balanceOf(owner);
-        uint256[] result = new uint256[](balance);
-
-        for (uint256 i=0; i<balance; ++i) {
+        uint256[] memory result = new uint256[](balance);
+        for (uint256 i=0; i < balance; ++i) {
             result[i] = tokenOfOwnerByIndex(owner, i);
         }
-
         return result;
     }
 
@@ -116,26 +110,6 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
     function getExtendAttr(uint256 tokenId, string memory key) external view override returns (string memory) {
         require(_exists(tokenId), "Token not exist");
         return _extendAttr[tokenId][key];
-    }
-
-    function claim(string memory name, EOCCUPATION occupation /* 职业 */, ESEX sex, address recommender) external payable nonReentrant {
-        require(msg.value >= Genesis.MINT_PRICE, "Payed too low value");
-        require(getCharacterId(name) == 0, "Name already exist");
-
-        if (recommender != address(0)) {
-            uint256 reward = msg.value * Genesis.RECOMMENDER_REWARD / 100;
-            Address.sendValue(payable(recommender), reward);
-            Address.sendValue(Genesis.TREASURY, msg.value - reward);
-        } else {
-            Address.sendValue(Genesis.TREASURY, msg.value);
-        }
-        
-        uint256 tokenId = ++_totalToken;
-        _characterName[name] = tokenId;
-        _safeMint(_msgSender(), tokenId);
-        _initAttribute(tokenId, name, occupation, sex);
-
-        emit NewCharacter(_msgSender(), recommender, tokenId);
     }
 
     function increaseAttr(uint256 tokenId, uint256 attrId, uint256 value) external onlyDirectory {
@@ -200,7 +174,10 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
                                     uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
                                     uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), 
                                     uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)];
+        
+        // 为各个属性位置设定值
         uint256[] memory amounts = [1, uint256(occupation), uint256(sex), 1, 0, 0, INIT_ATTR[occupation][0], INIT_ATTR[occupation][1], INIT_ATTR[occupation][2], INIT_ATTR[occupation][3], 0, 0];
+        
         bytes[] memory texts = [bytes(name), "", "", "", "", "", "", "", "", "", "", ""];
 
         _batchAttach(tokenId, attrIds, amounts, texts);

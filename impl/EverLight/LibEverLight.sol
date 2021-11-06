@@ -16,10 +16,7 @@ library LibEverLight {
     uint32 _totalSuitNum;                       // total suit number 
     uint32 _maxPosition;                        // max parts number for charater
     uint32 _luckyStonePrice;                    // price of lucky stone
-    address _goverContract;                     // address of governance contract
-    address _tokenContract;                     // address of token contract
-    address[] _mapContracts;                    // addresses of map contracts 
-  }
+}
   
   struct SuitInfo {
     string _name;                               // suit name
