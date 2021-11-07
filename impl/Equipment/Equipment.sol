@@ -378,27 +378,15 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
             require(_suitFlag[suitId] == tx.origin, "Not own the suit");
         }
 
-        // 调用EL接口，保存新的套装数据，以下部分代码调用接口完成
-        //_partsInfo._partsTypeList[position][rare].push(LibEverLight.SuitInfo(name, suitId));
-        //_partsInfo._partsCount[position] = _partsInfo._partsCount[position] + 1;
-        //_partsInfo._nameFlag[nameFlag] = true;
-        //emit NewTokenType(tx.origin, position, rare, name, suitId);
-
         // create 3 new token for creator
         for (uint i = 0; i < 3; ++i) {
           // todo: 此处的算力用处待定，还没有结论
-            uint32 randPower = uint32(everLight.queryPower(position, rare) < 10 ?
+            /*uint32 randPower = uint32(everLight.queryPower(position, rare) < 10 ?
                                     _getRandom(uint256(256).toString()) % 1 :
-                                    _getRandom(uint256(256).toString()) % (everLight.queryPower(position, rare) / 10));
+                                    _getRandom(uint256(256).toString()) % (everLight.queryPower(position, rare) / 10));*/
 
             // _mintEquipment(address recipient, uint256 position, string memory name, uint256 suitId, uint256 rarity, uint256 level)
             _mintEquipment(_msgSender(), position, name, suitId, rare, 1);
-
-            // create token information
-            //_tokenList[newTokenId] = LibEverLight.TokenInfo(newTokenId, /*tx.origin, */position, rare, name, suitId, 
-            //                                            _partsInfo._partsPowerList[position][rare] + randPower, 1, false, 0);
-
-            //_erc721Proxy.mintBy(tx.origin, newTokenId);
         }
 
         // 原来的装备状态需要进行变更，9级装备的状态需要改变
@@ -407,8 +395,10 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     }
 
     function _initAttribute(uint256 tokenId, uint256 position, string memory name, uint256 suitId, uint256 rarity, uint256 level) internal {
-        _batchAttach(tokenId, _getInitAttributeAttrIds(), _getInitAttributeAmounts(tokenId, position, level, rarity, suitId), 
-        _getInitAttributeTexts(name));
+        _batchAttach(tokenId, 
+            _getInitAttributeAttrIds(), 
+            _getInitAttributeAmounts(tokenId, position, level, rarity, suitId), 
+            _getInitAttributeTexts(name));
     }
     
     function _getInitAttributeTexts(string memory name) internal returns(bytes[] memory) {
@@ -462,7 +452,6 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         }
         {
             (
-               
                 amounts[5],amounts[6],amounts[7],amounts[8],amounts[9]
             )  = 
             (
@@ -471,7 +460,6 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         }
         {
             (
-                
                 amounts[10],amounts[11],amounts[12],amounts[13],amounts[14]
             )  = 
             (
@@ -480,7 +468,6 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         }
         {
             (
-               
                 amounts[15],amounts[16],amounts[17],amounts[18],amounts[19] 
             )  = 
             (
