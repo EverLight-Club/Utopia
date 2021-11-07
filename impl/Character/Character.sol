@@ -12,8 +12,8 @@ import "../../library/Genesis.sol";
 contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeable, DirectoryBridge, ReentrancyGuard {
     
     uint256[4][3] public INIT_ATTR = [[100, 100, 100, 100], 
-                                             [100, 100, 100, 100], 
-                                             [100, 100, 100, 100]];
+                                      [100, 100, 100, 100], 
+                                      [100, 100, 100, 100]];
     
     mapping(string => uint256) _characterName;
     mapping(uint256 => mapping(string => string)) _extendAttr;
@@ -177,10 +177,89 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         
         bytes[] memory texts = [bytes(name), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes("")];
         */
+        //uint256[] memory attrIds = new uint256[](12);
+        //uint256[] memory amounts = new uint256[](12);
+        //bytes[] memory texts = new bytes[](12);
+        _batchAttach(tokenId, _getInitAttributeAttrIds(), _getInitAttributeAmounts(occupation, sex), _getInitAttributeTexts(name));
+    }
+
+    function _getInitAttributeAttrIds() internal returns(uint256[] memory) {
         uint256[] memory attrIds = new uint256[](12);
+        {
+            (
+                attrIds[0], attrIds[1], attrIds[2], attrIds[3], attrIds[4]
+            ) = 
+            (
+                uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
+                uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
+                uint256(CHARACTERATTR.CHARACTER_EXPERIENCE)
+            );
+        }
+        {
+            (
+                attrIds[5], attrIds[6], attrIds[7], attrIds[8], attrIds[9]
+            ) = 
+            (
+                uint256(CHARACTERATTR.CHARACTER_POINTS), 
+                uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
+                uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION)
+            );
+        }
+        {
+            (
+                attrIds[10], attrIds[11]
+            ) = 
+            (
+                uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)
+            );
+        }
+        return attrIds;
+    }
+
+    function _getInitAttributeAmounts(EOCCUPATION occupation, ESEX sex) internal returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](12);
+        {(
+            amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]
+        ) = 
+        (
+            1, uint256(occupation), uint256(sex), 1, 0
+        );}
+        {(
+            amounts[5], amounts[6], amounts[7], amounts[8], amounts[9]
+        ) = 
+        (
+            0, INIT_ATTR[uint256(occupation)][0], INIT_ATTR[uint256(occupation)][1], INIT_ATTR[uint256(occupation)][2], INIT_ATTR[uint256(occupation)][3]
+        );}
+        {(
+            amounts[10],amounts[11]
+        ) = 
+        (
+            0, 0
+        );}
+        return amounts;
+    }
+
+    function _getInitAttributeTexts(string memory name) internal returns(bytes[] memory) {
         bytes[] memory texts = new bytes[](12);
-        _batchAttach(tokenId, attrIds, amounts, texts);
+        {(
+            texts[0], texts[1], texts[2], texts[3], texts[4]
+        ) = 
+        (
+            bytes(name), bytes(""), bytes(""), bytes(""), bytes("")
+        );}
+        {(
+            texts[5], texts[6], texts[7], texts[8], texts[9]
+        ) = 
+        (
+            bytes(""), bytes(""), bytes(""), bytes(""), bytes("")
+        );}
+        {(
+            texts[10],texts[11]
+        ) = 
+        (
+            bytes(""), bytes("")
+        );}
+        return texts;
     }
     
     function _upLevel(uint256 tokenId) internal {
