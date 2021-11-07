@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "../../token/ERC721/ERC721EnumerableUpgradeable.sol";
+import "../../token/ERC721/IERC721Upgradeable.sol";
 import "../../token/ERC3664Stand/ERC3664Upgradeable.sol";
 import "../Directory/DirectoryBridge.sol";
 import "../../interfaces/IEquipment.sol";
@@ -82,8 +83,8 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     }
 
     function _mintEquipmentWithCharacter(address recipient, uint256 characterId, uint8 position) internal {
-        ICharacter character = ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
-        require(character.exists(characterId), "characterId not exists");
+        IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
+        //require(character.exists(characterId), "characterId not exists");
         require(character.ownerOf(characterId) == tx.origin, "characterId !owner");
         uint256 tokenId = _mintEquipment(recipient, position, "", 0, 0, 1);
         _characterEquipments[characterId].push(tokenId);
@@ -181,7 +182,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     function wear(uint256 characterId, uint256[] memory tokenId) external {
         ICharacter character = ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
         require(tokenId.length > 0, "empty equipment");
-        require(character.exists(characterId), "!exists");
+        //require(character.ownerOf(characterId) == _msgSender(), "!owner");
         require(character.isApprovedOrOwner(_msgSender(), characterId), "Not owner or approver");
         
         uint256[] memory attrIds = new uint256[](7);
@@ -231,7 +232,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     function takOff(uint256 characterId, uint256[] memory tokenId) external {
         require(tokenId.length > 0, "empty tokenId list");
         ICharacter character = ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
-        require(character.exists(characterId), "characterId not exists");
+        //require(character.exists(characterId), "characterId not exists");
         require(character.isApprovedOrOwner(_msgSender(), characterId), "Not owner or approver");
 
         for (uint256 i = 0; i < tokenId.length; ++i) {
@@ -300,7 +301,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
 
     // @dev 升级身上已穿的装备
     function upgradeWearToken(uint256 characterId, uint256 tokenId) external {
-        ICharacter character = ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
+        IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
         require(character.ownerOf(characterId) == _msgSender(), "character !owner");
         require(ownerOf(tokenId) == _msgSender(), "equipment !owner");
         

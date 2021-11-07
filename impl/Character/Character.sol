@@ -9,7 +9,7 @@ import "../../utils/ReentrancyGuard.sol";
 import "../../interfaces/ICharacter.sol";
 import "../../library/Genesis.sol";
 
-contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacter, DirectoryBridge, ReentrancyGuard {
+contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeable, DirectoryBridge, ReentrancyGuard {
     
     uint256[4][3] public INIT_ATTR = [[100, 100, 100, 100], 
                                              [100, 100, 100, 100], 
@@ -25,11 +25,15 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         __Character_init_unchained();
     }
 
+    function CharacterInit(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyOwner initializer {
+        _mintBatch(attrIds, names, symbols, uris);
+    }
+
     function __Character_init_unchained() internal initializer {
-        uint256[] memory attrIds = new uint256[](12);
+        /*uint256[] memory attrIds = new uint256[](12);
         string[] memory names = new string[](12);
         string[] memory symbols = new string[](12);
-        string[] memory uris = new string[](12);
+        string[] memory uris = new string[](12);*/
         
         /*uint256[] memory attrIds = [uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
                                     uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
@@ -40,7 +44,7 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         string[12] memory names = ["name", "occupation", "sex", "level", "experience", "points", "strength", "DEXTERITY", "intelligence", "CONSTITUTION", "luck", "gold"];
         string[12] memory symbols = ["NAME", "OCCUPATION", "SEX", "LEVEL", "EXPERIENCE", "POINTS", "STRENGTH", "DEXTERITY", "INTELLIGENCE", "CONSTITUTION", "LUCK", "GOLD"];
         string[12] memory uris = ["", "", "", "", "", "", "", "", "", "", "", ""];*/
-        _mintBatch(attrIds, names, symbols, uris);
+        //_mintBatch(attrIds, names, symbols, uris);
     }
 
     function mintCharacter(address recipient, address recommender, uint256 tokenId, string memory name, EOCCUPATION occupation) external onlyDirectory {
@@ -74,7 +78,7 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         return balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
     }
 
-    function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {
+    function isApprovedOrOwner(address spender, uint256 tokenId) public view override returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }
 
@@ -91,7 +95,7 @@ contract Character is ERC3664Upgradeable, ERC721EnumerableUpgradeable, ICharacte
         return (balanceOf(tokenId, attrId), string(textOf(tokenId, attrId)));
     }
 
-    function getBatchAttr(uint256 tokenId, uint256[] calldata attrIds) external view returns (uint256[] memory) {
+    function getBatchAttr(uint256 tokenId, uint256[] calldata attrIds) external view override returns (uint256[] memory) {
         require(_exists(tokenId), "Token not exist");
         return balanceOfBatch(tokenId, attrIds);
     }
