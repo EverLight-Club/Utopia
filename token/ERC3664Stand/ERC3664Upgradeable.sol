@@ -94,7 +94,7 @@ contract ERC3664Upgradeable is Context, IERC3664MetadataUpgradeable {
     /**
      * @dev See {IERC3664-balanceOfBatch}.
      */
-    function balanceOfBatch(uint256 tokenId, uint256[] calldata attrIds)
+    function balanceOfBatch(uint256 tokenId, uint256[] memory attrIds)
     public
     view
     virtual
@@ -154,9 +154,9 @@ contract ERC3664Upgradeable is Context, IERC3664MetadataUpgradeable {
      */
     function _batchAttach(
         uint256 tokenId,
-        uint256[] calldata attrIds,
-        uint256[] calldata amounts,
-        bytes[] calldata texts
+        uint256[] memory attrIds,
+        uint256[] memory amounts,
+        bytes[] memory texts
     ) internal virtual {
         address operator = _msgSender();
 

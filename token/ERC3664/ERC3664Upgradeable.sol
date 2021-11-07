@@ -164,9 +164,9 @@ contract ERC3664Upgradeable is Context, ERC165Upgradeable, IERC3664MetadataUpgra
      */
     function _batchAttach(
         uint256 tokenId,
-        uint256[] calldata attrIds,
-        uint256[] calldata amounts,
-        bytes[] calldata texts
+        uint256[] memory attrIds,
+        uint256[] memory amounts,
+        bytes[] memory texts
     ) internal virtual {
         address operator = _msgSender();
 
