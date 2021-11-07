@@ -104,7 +104,7 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     }
 
     function isLucklyStone(uint256 tokenId) public view  returns (bool) {
-        (uint256 position, string memory name ) = getAttr(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION));
+        uint256 position = balanceOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION));
         return position == 99;
     }
 
@@ -160,16 +160,6 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         return _characterEquipments[characterId];
     }
 
-    function getBatchAttr(uint256 tokenId, uint256[] memory attrIds) public view returns (uint256[] memory) {
-        require(_exists(tokenId), "Token not exist");
-        return balanceOfBatch(tokenId, attrIds);
-    }
-
-    function getAttr(uint256 tokenId, uint256 attrId) public view returns (uint256, string memory) {
-        require(_exists(tokenId), "Token not exist");
-        return (balanceOf(tokenId, attrId), string(textOf(tokenId, attrId)));
-    }
-
     function getExtendAttr(uint256 tokenId, string memory key) external view returns (string memory) {
         require(_exists(tokenId), "Token not exist");
         return _extendAttr[tokenId][key];
@@ -182,20 +172,19 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     function wear(uint256 characterId, uint256[] memory tokenId) external {
         ICharacter character = ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
         require(tokenId.length > 0, "empty equipment");
-        //require(character.ownerOf(characterId) == _msgSender(), "!owner");
         require(character.isApprovedOrOwner(_msgSender(), characterId), "Not owner or approver");
         
-        uint256[] memory attrIds = new uint256[](7);
+        //todo:此处未开放对与角色的校验
+        //uint256[] memory attrIds = new uint256[](7);
         /*(attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4],
          attrIds[5],attrIds[6]) = (uint256(CHARACTERATTR.CHARACTER_LEVEL), uint256(CHARACTERATTR.CHARACTER_SEX), 
                                     uint256(CHARACTERATTR.CHARACTER_OCCUPATION), uint256(CHARACTERATTR.CHARACTER_STRENGTH), 
                                     uint256(CHARACTERATTR.CHARACTER_DEXTERITY), uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), 
                                     uint256(CHARACTERATTR.CHARACTER_CONSTITUTION));*/
-        
-        uint256[] memory characterAttrs = character.getBatchAttr(characterId, attrIds);
+        //uint256[] memory characterAttrs = character.getBatchAttr(characterId, attrIds);
+        uint256[] memory characterAttrs = new uint256[](0);
         for (uint i = 0; i < tokenId.length; ++i) {
             require(_isApprovedOrOwner(_msgSender(), tokenId[i]), "Not owner or approver");
-
             putOnOne(characterId, characterAttrs, tokenId[i]);
         }
     }
@@ -203,12 +192,16 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     // 使用归属关系的变化，来确定tokenId是否存在
     function putOnOne(uint256 characterId, uint256[] memory characterAttrs, uint256 tokenId) internal {
         uint256[] memory attrIds = new uint256[](8);
-        
-        (attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4],
-         attrIds[5],attrIds[6],attrIds[7]) = (uint256(EQUIPMENTATTR.LEVEL_LIMIT), uint256(EQUIPMENTATTR.SEX_LIMIT), 
-                                    uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_LIMIT), 
-                                    uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT),
-                                    uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), uint256(EQUIPMENTATTR.EQUIPMENT_POSITION));
+        (
+            attrIds[0], attrIds[1], attrIds[2], attrIds[3],
+            attrIds[4], attrIds[5], attrIds[6], attrIds[7]
+        ) = 
+        (
+            uint256(EQUIPMENTATTR.LEVEL_LIMIT), uint256(EQUIPMENTATTR.SEX_LIMIT), 
+            uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_LIMIT), 
+            uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT),
+            uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), uint256(EQUIPMENTATTR.EQUIPMENT_POSITION)
+        );
         uint256[] memory limitValue = balanceOfBatch(tokenId, attrIds);
         //require(canPutOn(characterAttrs, limitValue), "Limited to put on");
         uint256 position = limitValue[7];
@@ -264,10 +257,16 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         // 校验两个装备的部分属性（名称、等级、稀有度、位置等）
         uint256[] memory attrIds = new uint256[](6);
         
-        (attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4],
-         attrIds[5]) = (uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_NAME), 
-                                    uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), 
-                                    uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), uint256(EQUIPMENTATTR.EQUIPMENT_SUITID));
+        (
+            attrIds[0], attrIds[1], 
+            attrIds[2], attrIds[3], 
+            attrIds[4], attrIds[5]
+        ) = 
+        (
+            uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_NAME), 
+            uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), 
+            uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), uint256(EQUIPMENTATTR.EQUIPMENT_SUITID)
+        );
         uint256[] memory firstAttrAmount = balanceOfBatch(firstTokenId, attrIds);
         uint256[] memory secondAttrAmount = balanceOfBatch(secondTokenId, attrIds);
 
@@ -307,9 +306,14 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         
         uint256[] memory attrIds = new uint256[](5);
 
-        (attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4]) = (uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), 
-                                    uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), 
-                                    uint256(EQUIPMENTATTR.EQUIPMENT_SUITID));
+        (
+            attrIds[0], attrIds[1], attrIds[2], attrIds[3], attrIds[4]
+        ) = 
+        (
+            uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), 
+            uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), 
+            uint256(EQUIPMENTATTR.EQUIPMENT_SUITID)
+        );
         
         uint256[] memory newTokenAttrAmount = balanceOfBatch(tokenId, attrIds);
         
@@ -448,39 +452,45 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
     
     function _getInitAttributeAmounts(uint256 tokenId, uint256 position, uint256 level, uint256 rarity, uint256 suitId) internal returns(uint256[] memory){
         uint256[] memory amounts = new uint256[](20);
-        /*{(
-            amounts[0],amounts[1],amounts[2],amounts[3],amounts[4],
-            amounts[5],amounts[6],amounts[7],amounts[8],amounts[9],
-            amounts[10],amounts[11],amounts[12],amounts[13],amounts[14],
-            amounts[15],amounts[16],amounts[17],amounts[18],amounts[19] 
-        )  = (tokenId, 0, position, level, rarity, suitId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        }*/
+        {
+            (
+                amounts[0],amounts[1],amounts[2],amounts[3],amounts[4],
+                amounts[5],amounts[6],amounts[7],amounts[8],amounts[9],
+                amounts[10],amounts[11],amounts[12],amounts[13],amounts[14],
+                amounts[15],amounts[16],amounts[17],amounts[18],amounts[19] 
+            )  = 
+            (
+                tokenId, 0, position, level, rarity, 
+                suitId, 0, 0, 0, 0, 
+                0, 0, 0, 0, 0, 
+                0, 0, 0, 0, 0
+            );
+        }
         return amounts;
     }
     
     function _getInitAttributeAttrIds() internal returns(uint256[] memory){
-         uint256[] memory attrIds = new uint256[](20);
-        
-       /*{ 
-        (
-            attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4],
-            attrIds[5],attrIds[6],attrIds[7],attrIds[8],attrIds[9],
-            attrIds[10],attrIds[11],attrIds[12],attrIds[13],attrIds[14],
-            attrIds[15],attrIds[16],attrIds[17],attrIds[18],attrIds[19] 
-        )  = 
-        (
-            uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_NAME), 
-            uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), 
-            uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), 
-            uint256(EQUIPMENTATTR.LEVEL_LIMIT), uint256(EQUIPMENTATTR.SEX_LIMIT), 
-            uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_LIMIT), 
-            uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), 
-            uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_BONUS), 
-            uint256(EQUIPMENTATTR.DEXTERITY_BONUS), uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), 
-            uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), uint256(EQUIPMENTATTR.ATTACK_BONUS), 
-            uint256(EQUIPMENTATTR.DEFENSE_BONUS), uint256(EQUIPMENTATTR.SPEED_BONUS));
-       }*/
-       return attrIds;
+        uint256[] memory attrIds = new uint256[](20);
+        { 
+            (
+                attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4],
+                attrIds[5],attrIds[6],attrIds[7],attrIds[8],attrIds[9],
+                attrIds[10],attrIds[11],attrIds[12],attrIds[13],attrIds[14],
+                attrIds[15],attrIds[16],attrIds[17],attrIds[18],attrIds[19] 
+            )  = 
+            (
+                uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_NAME), 
+                uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), 
+                uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), 
+                uint256(EQUIPMENTATTR.LEVEL_LIMIT), uint256(EQUIPMENTATTR.SEX_LIMIT), 
+                uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_LIMIT), 
+                uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), 
+                uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_BONUS), 
+                uint256(EQUIPMENTATTR.DEXTERITY_BONUS), uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), 
+                uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), uint256(EQUIPMENTATTR.ATTACK_BONUS), 
+                uint256(EQUIPMENTATTR.DEFENSE_BONUS), uint256(EQUIPMENTATTR.SPEED_BONUS));
+        }
+        return attrIds;
     }
 
     function _getRandom(string memory purpose) internal view returns (uint256) {
