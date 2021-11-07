@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "../../token/ERC721/ERC721EnumerableUpgradeable.sol";
-import "../../token/ERC3664/ERC3664Upgradeable.sol";
+import "../../token/ERC3664Stand/ERC3664Upgradeable.sol";
 import "../Directory/DirectoryBridge.sol";
 import "../../utils/ReentrancyGuard.sol";
 import "../../interfaces/ICharacter.sol";

@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 
 import "../../utils/Context.sol";
 import "../../utils/Strings.sol";
-import "../ERC165/ERC165Upgradeable.sol";
+import "../../proxy/Initializable.sol";
 import "./IERC3664MetadataUpgradeable.sol";
 
-contract ERC3664Upgradeable is Context, ERC165Upgradeable, IERC3664MetadataUpgradeable {
+contract ERC3664Upgradeable is Context, IERC3664MetadataUpgradeable {
     using Strings for uint256;
 
     struct AttrMetadata {
@@ -31,24 +31,14 @@ contract ERC3664Upgradeable is Context, ERC165Upgradeable, IERC3664MetadataUpgra
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
-    function __ERC3664_init() internal initializer {
-        __ERC165_init_unchained();
+    /*function __ERC3664_init() internal initializer {
+        //__ERC165_init_unchained();
         __ERC3664_init_unchained();
     }
 
     function __ERC3664_init_unchained() internal initializer {
 
-    }
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165Upgradeable, IERC165Upgradeable) returns (bool) {
-        return
-        interfaceId == type(IERC3664Upgradeable).interfaceId ||
-        interfaceId == type(IERC3664MetadataUpgradeable).interfaceId ||
-        super.supportsInterface(interfaceId);
-    }
+    }*/
 
     /**
      * @dev See {IERC3664Metadata-name}.
