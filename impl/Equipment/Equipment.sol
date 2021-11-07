@@ -256,7 +256,6 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
 
         // 校验两个装备的部分属性（名称、等级、稀有度、位置等）
         uint256[] memory attrIds = new uint256[](6);
-        
         (
             attrIds[0], attrIds[1], 
             attrIds[2], attrIds[3], 

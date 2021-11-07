@@ -14,7 +14,7 @@ abstract contract DirectoryBridge is OwnableUpgradeable {
     address private _directory;
 
     function __DirectoryBridge_init() internal initializer {
-        __Ownable_init_unchained();
+        __Ownable_init();
     }
 
     /**
