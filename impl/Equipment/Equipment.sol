@@ -454,15 +454,36 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         uint256[] memory amounts = new uint256[](20);
         {
             (
-                amounts[0],amounts[1],amounts[2],amounts[3],amounts[4],
-                amounts[5],amounts[6],amounts[7],amounts[8],amounts[9],
-                amounts[10],amounts[11],amounts[12],amounts[13],amounts[14],
+                amounts[0],amounts[1],amounts[2],amounts[3],amounts[4]
+            )  = 
+            (
+                tokenId, 0, position, level, rarity
+            );
+        }
+        {
+            (
+               
+                amounts[5],amounts[6],amounts[7],amounts[8],amounts[9]
+            )  = 
+            (
+                suitId, 0, 0, 0, 0
+            );
+        }
+        {
+            (
+                
+                amounts[10],amounts[11],amounts[12],amounts[13],amounts[14]
+            )  = 
+            (
+                0, 0, 0, 0, 0
+            );
+        }
+        {
+            (
+               
                 amounts[15],amounts[16],amounts[17],amounts[18],amounts[19] 
             )  = 
             (
-                tokenId, 0, position, level, rarity, 
-                suitId, 0, 0, 0, 0, 
-                0, 0, 0, 0, 0, 
                 0, 0, 0, 0, 0
             );
         }
@@ -473,22 +494,43 @@ contract Equipment is ERC3664Upgradeable, ERC721EnumerableUpgradeable, IEquipmen
         uint256[] memory attrIds = new uint256[](20);
         { 
             (
-                attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4],
-                attrIds[5],attrIds[6],attrIds[7],attrIds[8],attrIds[9],
-                attrIds[10],attrIds[11],attrIds[12],attrIds[13],attrIds[14],
-                attrIds[15],attrIds[16],attrIds[17],attrIds[18],attrIds[19] 
+                attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4]
             )  = 
             (
                 uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_NAME), 
                 uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), 
-                uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), 
+                uint256(EQUIPMENTATTR.EQUIPMENT_RARITY)
+            );
+        }
+        { 
+            (
+                attrIds[5],attrIds[6],attrIds[7],attrIds[8],attrIds[9]
+            )  = 
+            (
+                 uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), 
                 uint256(EQUIPMENTATTR.LEVEL_LIMIT), uint256(EQUIPMENTATTR.SEX_LIMIT), 
-                uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_LIMIT), 
+                uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_LIMIT)
+            );
+        }
+        { 
+            (
+                attrIds[10],attrIds[11],attrIds[12],attrIds[13],attrIds[14]
+            )  = 
+            (
                 uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), 
                 uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_BONUS), 
-                uint256(EQUIPMENTATTR.DEXTERITY_BONUS), uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), 
+                uint256(EQUIPMENTATTR.DEXTERITY_BONUS)
+            );
+        }
+        { 
+            (
+                attrIds[15],attrIds[16],attrIds[17],attrIds[18],attrIds[19] 
+            )  = 
+            (
+                uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), 
                 uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), uint256(EQUIPMENTATTR.ATTACK_BONUS), 
-                uint256(EQUIPMENTATTR.DEFENSE_BONUS), uint256(EQUIPMENTATTR.SPEED_BONUS));
+                uint256(EQUIPMENTATTR.DEFENSE_BONUS), uint256(EQUIPMENTATTR.SPEED_BONUS)
+            );
         }
         return attrIds;
     }
