@@ -2,20 +2,21 @@
 
 pragma solidity ^0.8.0;
 
-import "../../token/ERC721/ERC721EnumerableUpgradeable.sol";
-import "../../token/ERC3664/ERC3664Upgradeable.sol";
+import "../../token/ERC20/IERC20MetadataUpgradeable.sol";
+import "../../token/ERC721/IERC721EnumerableUpgradeable.sol";
 import "../Directory/DirectoryBridge.sol";
 import "../../utils/ReentrancyGuard.sol";
-import "../../interfaces/ICharacter.sol";
 import "../../library/Genesis.sol";
 import '../../utils/Base64.sol';
 import '../../utils/Strings.sol';
 import '../../utils/Address.sol';
-import "../../interfaces/ICharacter.sol";
-import "../../interfaces/IEquipment.sol";
 import "./LibEverLight.sol";
+import "../../utils/Context.sol";
+import "../../proxy/Initializable.sol";
+import "./ICharacter.sol";
+import "./IEquipment.sol";
 
-contract EverLight is DirectoryBridge, ReentrancyGuard {
+contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
 
   using Address for address;
   using Strings for uint256;
@@ -25,7 +26,7 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
   mapping(address => address) _recommenderList;                   // msg.sender -> recommender
   
   mapping(uint8 => mapping(uint8 => uint32)) _partsPowerList;     // position -> (rare -> power)
-  mapping(uint8 => mapping(uint8 => SuitInfo[])) _partsTypeList;  // position -> (rare -> SuitInfo[])
+  mapping(uint8 => mapping(uint8 => LibEverLight.SuitInfo[])) _partsTypeList;  // position -> (rare -> SuitInfo[])
   mapping(uint8 => uint32) _partsCount;                           // position -> count
   mapping(uint8 => string) _rareColor;                            // rare -> color
 
@@ -36,7 +37,7 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
   function initialize() public initializer {
     __DirectoryBridge_init();
     __EverLight_init_unchained();
-	}
+  }
 
   function __EverLight_init_unchained() internal initializer {
     _config._baseFee = 25 * 10 ** 18; 
@@ -48,48 +49,47 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     _config._luckyStonePrice = 2000;    
   }
 
-  function queryPower(uint8 position, uint8 rare) public view override returns (uint32 power) {
+  function queryPower(uint8 position, uint8 rare) public view returns (uint32 power) {
     return _partsPowerList[position][rare];
   }
 
-  function queryPartsCount(uint8 position) public view override returns (uint32 count) {
+  function queryPartsCount(uint8 position) public view returns (uint32 count) {
     return _partsCount[position];
   }
 
-  function queryPartsTypeCount(uint8 position, uint8 rare) public view override returns (uint32 count) {
+  function queryPartsTypeCount(uint8 position, uint8 rare) public view returns (uint256 count) {
     return _partsTypeList[position][rare].length;
   }
 
-  function queryPartsType(uint8 position, uint8 rare, uint256 index) public view override returns (uint32 _suitId, string memory name) {
-    return _partsTypeList[position][rare][index]._suitId, _partsTypeList[position][rare][index].name;
+  function queryPartsType(uint8 position, uint8 rare, uint256 index) public view returns (uint32 _suitId, string memory name) {
+    (_suitId, name) = (_partsTypeList[position][rare][index]._suitId, _partsTypeList[position][rare][index]._name);
   }
 
-  function querySuitNum() public view override returns (uint256 totalSuitNum) {
-    return _config.totalSuitNum;
+  function querySuitNum() public view returns (uint256 totalSuitNum) {
+    return _config._totalSuitNum;
   }
 
   function addNewSuit(uint256 suitId, string memory suitName, uint8 position, uint8 rare) external onlyDirectory {
-    _config.totalSuitNum++;
-    _partsTypeList[position][rare].push(LibEverLight.SuitInfo(name, suitId));
-    // todo: 此处决定相关参数存储在哪里
+    _config._totalSuitNum++;
+    _partsTypeList[position][rare].push(LibEverLight.SuitInfo(suitName, uint32(suitId)));
     _partsCount[position] = _partsCount[position] + 1;
     //_nameFlag[nameFlag] = true;
-    emit NewTokenType(tx.origin, position, rare, name, suitId);
+    //emit NewTokenType(tx.origin, position, rare, suitName, suitId);
   }
 
-  function queryAccount(address owner) public view override returns (LibEverLight.Account memory account) {
+  function queryAccount(address owner) public view returns (LibEverLight.Account memory account) {
     account = _accountList[owner];
   }
 
-  function queryConfigurations() public view override returns (LibEverLight.Configurations memory configurations) {
+  function queryConfigurations() public view returns (LibEverLight.Configurations memory configurations) {
     configurations = _config;
   }
 
-  function queryMapInfo() public view override returns (address[] memory addresses) {
+  function queryMapInfo() public view returns (address[] memory addresses) {
     addresses = _mapContracts;
   }
 
-  function mint(string memory name, uint256 occupation, address recommender) external override payable {
+  function mint(string memory name, uint256 occupation, address recommender) external payable {
     // one address can only apply once
     require(!_accountList[tx.origin]._creationFlag, "Only once");
 
@@ -135,21 +135,21 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
     // todo: 此处调用角色合约进行属性初始化
     // todo: 角色初始化之后还需要进行装备信息初始化
     // todo: 批量调用装备合约，完成各position装备的初始化（包含幸运值的使用，通过参数传入，参考：_createCharacter）
-    ICharacter(getAddress(CONTRACT_TYPE.CHARACTER)).mintCharacter(msg.sender, recommender, characterId, name, occupation);
-    IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).mintBatchEquipment(msg.sender, characterId, _config._maxPosition);
+    ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER))).mintCharacter(msg.sender, recommender, characterId, name, occupation);
+    IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).mintBatchEquipment(msg.sender, characterId, uint8(_config._maxPosition));
   }
 
-  function exchangeToken(uint32 mapId, uint256[] memory mapTokenList) external override {
+  function exchangeToken(uint32 mapId, uint256[] memory mapTokenList) external {
     require(mapId < _mapContracts.length, "Invalid map");
     for (uint i = 0; i < mapTokenList.length; ++i) {
       // burn map token
       _transferERC721(_mapContracts[mapId], tx.origin, address(this), mapTokenList[i]);
       uint256 position = uint8(_getRandom(mapTokenList[i].toString()) % _config._maxPosition);
-      IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).mintRandomEquipment(msg.sender, position);
+      IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).mintRandomEquipment(msg.sender, uint8(position));
     }
   }
 
-  function buyLuckyStone(uint8 count) external override {
+  function buyLuckyStone(uint8 count) external {
     require(_tokenContract != address(0), "Not open");
 
     // transfer token to address 0
@@ -158,22 +158,22 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
 
     // mint luck stone 
     for (uint8 i = 0; i < count; ++i) {
-      IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).mintLuckStone(tx.origin);
+      IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).mintLuckStone(tx.origin);
     }
   }
 
-  function useLuckyStone(uint256 characterId, uint256[] memory tokenId) external override {
-    require(ICharacter(getAddress(CONTRACT_TYPE.CHARACTER)).ownerOf(characterId) == msg.sender, "EverLight: !owner");
+  function useLuckyStone(uint256 characterId, uint256[] memory tokenId) external {
+    require(IERC721EnumerableUpgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER))).ownerOf(characterId) == msg.sender, "EverLight: !owner");
 
     for (uint i = 0; i < tokenId.length; ++i) {
-      require(IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).ownerOf(tokenId[i]) == msg.sender, "EverLight: stone !owner");
-      require(IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).isLucklyStone(tokenId[i]), "EverLight: not stone");
+      require(IERC721EnumerableUpgradeable(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).ownerOf(tokenId[i]) == msg.sender, "EverLight: stone !owner");
+      require(IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).isLucklyStone(tokenId[i]), "EverLight: not stone");
       
-      ICharacter(getAddress(CONTRACT_TYPE.CHARACTER)).attachLucklyPoint(characterId, 1);
+      ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER))).attachLucklyPoint(characterId, 1);
       //++_accountList[tx.origin]._luckyNum;
 
       // burn luck stone token
-      IEquipment(getAddress(CONTRACT_TYPE.EQUIPMENT)).burnEquipment(tokenId[i]);
+      IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).burnEquipment(tokenId[i]);
     }
   }
 
@@ -279,7 +279,7 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
 
   function _transferERC20(address contractAddress, address from, address to, uint256 amount) internal {
     //uint256 balanceBefore = IERC20(contractAddress).balanceOf(from);
-    IERC20(contractAddress).transferFrom(from, to, amount);
+    IERC20MetadataUpgradeable(contractAddress).transferFrom(from, to, amount);
 
     bool success;
     assembly {
@@ -299,12 +299,12 @@ contract EverLight is DirectoryBridge, ReentrancyGuard {
   }
 
   function _transferERC721(address contractAddress, address from, address to, uint256 tokenId) internal {
-    address ownerBefore = IERC721(contractAddress).ownerOf(tokenId);
+    address ownerBefore = IERC721EnumerableUpgradeable(contractAddress).ownerOf(tokenId);
     require(ownerBefore == from, "Not own token");
     
-    IERC721(contractAddress).transferFrom(from, to, tokenId);
+    IERC721EnumerableUpgradeable(contractAddress).transferFrom(from, to, tokenId);
 
-    address ownerAfter = IERC721(contractAddress).ownerOf(tokenId);
+    address ownerAfter = IERC721EnumerableUpgradeable(contractAddress).ownerOf(tokenId);
     require(ownerAfter == to, "Transfer failed");
   }
 

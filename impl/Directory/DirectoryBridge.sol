@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import "../../proxy/OwnableUpgradeable.sol";
+import "../../proxy/Ownable.sol";
 import "../../interfaces/IDirectory.sol";
 
-abstract contract DirectoryBridge is OwnableUpgradeable {
+abstract contract DirectoryBridge is Ownable {
 
     enum CONTRACT_TYPE {
         CHARACTER, EVER_LIGHT, EQUIPMENT, EVER_LIGHT_DB
@@ -13,7 +13,7 @@ abstract contract DirectoryBridge is OwnableUpgradeable {
 
     address private _directory;
 
-    function __DirectoryBridge_init() internal initializer {
+    function __DirectoryBridge_init() internal {
         __Ownable_init();
     }
 

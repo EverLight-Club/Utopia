@@ -34,7 +34,7 @@ interface IEquipment {
 
     event NewEquipment(address indexed owner, uint256 tokenId, uint256 equipmentId);
 
-    function isApprovedOrOwner(address spender, uint256 tokenId) external view returns (bool);
+    /*function isApprovedOrOwner(address spender, uint256 tokenId) external view returns (bool);
     function getEquipmentList(uint256 characterId) external view returns (uint256[] memory);
     function getEquipments(address owner) external view returns (uint256[] memory);
     function getEquipmentAttr(uint256 tokenId, uint256[] memory attrs) external view returns (uint256[] memory);
@@ -43,5 +43,5 @@ interface IEquipment {
     function getOriginExtendAttr(uint256 tokenId, string memory key) external view returns (string memory);
 
     function setExtendAttr(uint256 tokenId, string memory key, string memory value) external;
-    function claim(address to, uint256 equipmentId) external;
+    function claim(address to, uint256 equipmentId) external;*/
 }
