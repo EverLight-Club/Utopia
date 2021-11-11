@@ -151,8 +151,8 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         bytes[] memory texts = ["", "", "", "", "", "", ""];
 
         uint256[] memory currValue = balanceOfBatch(tokenId, attrIds);*/
-        uint256[] memory attrIds = new uint256[](4);
-        bytes[] memory texts = new bytes[](4);
+        //uint256[] memory attrIds = new uint256[](4);
+        //bytes[] memory texts = new bytes[](4);
 
         //uint256[] memory currValue = balanceOfBatch(tokenId, attrIds);
         //_burnBatch(tokenId, attrIds, currValue);
@@ -183,7 +183,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         _batchAttach(tokenId, _getInitAttributeAttrIds(), _getInitAttributeAmounts(occupation, sex), _getInitAttributeTexts(name));
     }
 
-    function _getInitAttributeAttrIds() internal returns(uint256[] memory) {
+    function _getInitAttributeAttrIds() internal pure returns(uint256[] memory) {
         uint256[] memory attrIds = new uint256[](12);
         {
             (
@@ -216,7 +216,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         return attrIds;
     }
 
-    function _getInitAttributeAmounts(EOCCUPATION occupation, ESEX sex) internal returns(uint256[] memory) {
+    function _getInitAttributeAmounts(EOCCUPATION occupation, ESEX sex) internal view returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](12);
         {(
             amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]
@@ -239,7 +239,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         return amounts;
     }
 
-    function _getInitAttributeTexts(string memory name) internal returns(bytes[] memory) {
+    function _getInitAttributeTexts(string memory name) pure internal returns(bytes[] memory) {
         bytes[] memory texts = new bytes[](12);
         {(
             texts[0], texts[1], texts[2], texts[3], texts[4]
