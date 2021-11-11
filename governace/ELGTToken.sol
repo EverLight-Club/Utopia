@@ -9,10 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
 contract ELGTToken is ERC20, ERC20Burnable, Ownable, ERC20Permit, ERC20Votes {
 
-    //1. 初始直接mint 10%给一个地址就好
-    //2. erc20合约支持一个mint & burn接口，允许调用方为gov合约
-    //3. erc20合约需要有一个接口设置gov的地址
-
     uint256 public MaxTotalSupply = 21_000_000 * 10 ** 18;
 
     constructor() ERC20("ELGTToken", "ELGT") ERC20Permit("ELGTToken") {

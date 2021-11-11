@@ -2657,7 +2657,7 @@ abstract contract GovernorCountingSimple is Governor {
     }
 }
 
-// File: contract-41d05a17b4.sol
+// File: governace/ELGTGovernor.sol
 
 
 pragma solidity ^0.8.2;
@@ -2678,7 +2678,7 @@ contract ELGTGovernor is Governor, GovernorCountingSimple, GovernorVotes, Govern
     }
 
     function votingPeriod() public pure override returns (uint256) {
-        return 45818; // 1 week
+        return 201600; // 1 week
     }
 
     // The following functions are overrides required by Solidity.
