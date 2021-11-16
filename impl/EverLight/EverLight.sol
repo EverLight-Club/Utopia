@@ -40,11 +40,11 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
   }
 
   function __EverLight_init_unchained() internal initializer {
-    _config._baseFee = 25 * 10 ** 18; 
+    _config._baseFee = 0.001 * 10 ** 18; 
     _config._incrPerNum = 2500;       
-    _config._incrFee = 25 * 10 ** 18; 
+    _config._incrFee = 0.001 * 10 ** 18; 
     _config._decrBlockNum = 25000;       
-    _config._decrFee = 25 * 10 ** 18;
+    _config._decrFee = 0.001 * 10 ** 18;
     _config._maxPosition = 11;
     _config._luckyStonePrice = 2000;    
   }
@@ -87,6 +87,11 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
 
   function queryMapInfo() public view returns (address[] memory addresses) {
     addresses = _mapContracts;
+  }
+  
+  event WithValue(uint256 balance);
+  function mintWithValue() external payable { 
+      emit WithValue(msg.value);
   }
 
   function mint(string memory name, uint256 occupation, address recommender) external payable {
@@ -178,24 +183,26 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
   }
 
   function addPartsType(uint8 position, uint8 rare, string memory color, uint256 power, string[] memory names, uint32[] memory suits) external onlyOwner {
+    IEquipment equipment = IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT)));
     _partsPowerList[position][rare] = uint32(power);
     _rareColor[rare] = color;
 
     for (uint i=0; i<names.length; ++i) {
       _partsTypeList[position][rare].push(LibEverLight.SuitInfo(names[i], suits[i]));
-      _nameFlag[uint256(keccak256(abi.encodePacked(names[i])))] = true;
-
+      //_nameFlag[uint256(keccak256(abi.encodePacked(names[i])))] = true;
+      equipment.setNameFlags(names[i], true);
       if (suits[i] > 0 ) {
-        if (_partsInfo._suitFlag[suits[i]] == address(0)) {
+        if (equipment.querySuitOwner(suits[i]) == address(0)) {
           _config._totalSuitNum = _config._totalSuitNum < suits[i] ? suits[i] : _config._totalSuitNum;
-          _partsInfo._suitFlag[suits[i]] = tx.origin;
+          //_suitFlag[suits[i]] = tx.origin;
+          equipment.setSuitFlags(suits[i], tx.origin);
         } else {
-          require(_partsInfo._suitFlag[suits[i]] == tx.origin, "Not own the suit");
+          require(equipment.querySuitOwner(suits[i]) == tx.origin, "Not own the suit");
         }
       }
     }
     
-    _partsInfo._partsCount[position] = uint32(_partsInfo._partsCount[position] + names.length);
+    _partsCount[position] = uint32(_partsCount[position] + names.length);
   }
 
   function _getRandom(string memory purpose) internal view returns (uint256) {

@@ -25,7 +25,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         __Character_init_unchained();
     }
 
-    function CharacterInit(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyOwner initializer {
+    function CharacterInit(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyOwner {
         _mintBatch(attrIds, names, symbols, uris);
     }
 
@@ -83,8 +83,71 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory output) {
-
+        // require(_exists(tokenId), 'Token does not exist');
+        // output = tokenURIForCharacter(tokenId);
+        // string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "Bag #', tokenId.toString(), '", "description": "The first fully autonomous decentralized NFT Metaverse game.", "image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '"}'))));
+        // output = string(abi.encodePacked('data:application/json;base64,', json));
+        // return output;
     }
+
+    // function tokenURIForCharacter(uint256 tokenId) internal view returns (string memory) {
+    //     (, uint32 powerFactor, uint256[] memory tokenList, uint32 totalPower) = everLightContract.queryCharacter(tokenId);
+    //     string[] memory parts = new string[](2 * tokenList.length + 3);
+    //     parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
+        
+    //     uint256 index = 1;
+    //     uint256 yValue = 20;
+    //     for(uint i = 0; i < tokenList.length; i++) {
+    //       yValue = yValue + 20;
+    //       parts[index] = pluck(tokenList[i], uint8(i));
+    //       index = index + 1;
+    //       parts[index] = string(abi.encodePacked('</text><text x="10" y="',yValue.toString(),'" class="base">')); // '</text><text x="10" y="40" class="base">';
+    //       index++;
+    //     }
+    //     parts[index] = string(abi.encodePacked("totalPower:[", uint256(totalPower).toString(), "]"));
+    //     index = index + 1;
+    //     parts[index] = '</text></svg>';
+
+    //     string memory output = "";
+    //     uint n = 0;
+    //     while(n < parts.length){  // 5
+    //       if(n % 2 == 0){ // 0, 2, 4, 6, 8
+    //         output = string(abi.encodePacked(output, parts[n], parts[n+1]));
+    //       }
+    //       n = n + 2;
+    //       if(n == (parts.length - 1)){
+    //         output = string(abi.encodePacked(output, parts[n]));
+    //         break;
+    //       }
+    //       if(n >= parts.length){
+    //         break;
+    //       } 
+    //     }
+    //     return output;
+    // }
+
+    // function pluck(uint256 tokenId, uint8 position) internal view returns (string memory output) {
+    //     LibEverLight.TokenInfo memory tokenInfo = everLightContract.queryToken(tokenId);
+    //     if(tokenInfo._tokenId == 0){
+    //       output = string(abi.encodePacked(uint256(position).toString(), ":?"));
+    //       return output;
+    //     }
+    //     if(tokenInfo._position == 99){
+    //       output = string(abi.encodePacked(uint256(tokenInfo._position).toString(), ":", tokenInfo._name));
+    //       return output;
+    //     }
+    //     if(tokenInfo._createFlag) {
+    //       output = string(abi.encodePacked(uint256(tokenInfo._position).toString(), ":", tokenInfo._name, "(+", uint256(tokenInfo._level).toString(), "E)[", uint256(tokenInfo._power).toString(), "]"));
+    //     } else {
+    //       output = string(abi.encodePacked(uint256(tokenInfo._position).toString(), ":", tokenInfo._name, "(+", uint256(tokenInfo._level).toString(), ")[", uint256(tokenInfo._power).toString(), "]"));
+    //     }
+        
+    //     string memory color = everLightContract.queryColorByRare(tokenInfo._rare);
+    //     if(bytes(color).length > 0) {
+    //       output = string(abi.encodePacked('<a style="fill:', color, ';">', output, '</a>'));
+    //     }
+    //     return output;
+    // }
 
     function getCharacterId(string memory name) public view returns (uint256) {
         return _characterName[name];
