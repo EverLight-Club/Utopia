@@ -40,6 +40,10 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         equipment3664 = Equipment3664(_equipment3664);
     }
 
+    function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory output) {
+
+    }
+
     // @dev 批量创建装备（对于新角色，进行初始化创建时调用该接口）
     function mintBatchEquipment(address recipient, uint256 characterId, uint8 maxPosition) external onlyDirectory {
         for(uint256 i = 0; i < maxPosition; i++) {
@@ -112,6 +116,10 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         _burn(tokenId); // burn 721, not 3664
     }
 
+    function setSuitFlags(uint256 suitId, address owner) external onlyDirectory {
+        _suitFlag[suitId] = owner;
+    }
+
     // @dev 查看套装ID的所有者
     function querySuitOwner(uint32 suitId) public view returns (address) {
        return _suitFlag[suitId];
@@ -120,6 +128,10 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     // @dev 查看装备名称是否被使用
     function isNameExist(string memory name) public view returns (bool) {
         return _nameFlag[uint256(keccak256(abi.encodePacked(name)))];
+    }
+
+    function setNameFlags(string memory name, bool flags) external onlyDirectory {
+        _nameFlag[uint256(keccak256(abi.encodePacked(name)))] = flags;
     }
 
     function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {

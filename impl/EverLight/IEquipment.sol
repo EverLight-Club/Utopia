@@ -9,8 +9,14 @@ interface IEquipment {
     function mintRandomEquipment(address recipient, uint8 position) external;
 
     function mintLuckStone(address recipient) external;
+
     function isLucklyStone(uint256 tokenId) external view  returns (bool);
 
     function burnEquipment(uint256 tokenId) external;
 
+    function querySuitOwner(uint32 suitId) external view returns (address);
+
+    function setSuitFlags(uint32 suitId, address owner) external;
+
+    function setNameFlags(string memory name, bool flags) external;
 }

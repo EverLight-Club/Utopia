@@ -177,6 +177,27 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     }
   }
 
+  function addPartsType(uint8 position, uint8 rare, string memory color, uint256 power, string[] memory names, uint32[] memory suits) external onlyOwner {
+    _partsPowerList[position][rare] = uint32(power);
+    _rareColor[rare] = color;
+
+    for (uint i=0; i<names.length; ++i) {
+      _partsTypeList[position][rare].push(LibEverLight.SuitInfo(names[i], suits[i]));
+      _nameFlag[uint256(keccak256(abi.encodePacked(names[i])))] = true;
+
+      if (suits[i] > 0 ) {
+        if (_partsInfo._suitFlag[suits[i]] == address(0)) {
+          _config._totalSuitNum = _config._totalSuitNum < suits[i] ? suits[i] : _config._totalSuitNum;
+          _partsInfo._suitFlag[suits[i]] = tx.origin;
+        } else {
+          require(_partsInfo._suitFlag[suits[i]] == tx.origin, "Not own the suit");
+        }
+      }
+    }
+    
+    _partsInfo._partsCount[position] = uint32(_partsInfo._partsCount[position] + names.length);
+  }
+
   function _getRandom(string memory purpose) internal view returns (uint256) {
     return uint256(keccak256(abi.encodePacked(block.timestamp, tx.gasprice, tx.origin, purpose)));
   }
