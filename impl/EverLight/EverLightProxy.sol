@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../../proxy/TransparentUpgradeable.sol";
+import "../../proxy/TransparentUpgradeableProxy.sol";
 
 contract EverLightProxy is TransparentUpgradeableProxy {
     /**

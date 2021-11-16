@@ -8,7 +8,7 @@ import "../../interfaces/IDirectory.sol";
 abstract contract DirectoryBridge is Ownable {
 
     enum CONTRACT_TYPE {
-        CHARACTER, EVER_LIGHT, EQUIPMENT, EVER_LIGHT_DB
+        CHARACTER, EVER_LIGHT, EQUIPMENT, EQUIPMENT3664
     }
 
     address private _directory;
