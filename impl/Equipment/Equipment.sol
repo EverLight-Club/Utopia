@@ -115,8 +115,8 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         _burn(tokenId); // burn 721, not 3664
     }
 
-    function setSuitFlags(uint256 suitId, address owner) external onlyDirectory {
-        _suitFlag[uint32(suitId)] = owner;
+    function setSuitFlags(uint256 suitId, address _owner) external onlyDirectory {
+        _suitFlag[uint32(suitId)] = _owner;
     }
 
     // @dev 查看套装ID的所有者

@@ -291,7 +291,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
             amounts[5], amounts[6], amounts[7], amounts[8], amounts[9]
         ) = 
         (
-            0, INIT_ATTR[uint256(occupation)][0], INIT_ATTR[uint256(occupation)][1], INIT_ATTR[uint256(occupation)][2], INIT_ATTR[uint256(occupation)][3]
+            0, 100, 100, 100, 100
         );}
         {(
             amounts[10],amounts[11]
