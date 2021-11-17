@@ -8,7 +8,7 @@ import "../../interfaces/IDirectory.sol";
 abstract contract DirectoryBridge is Ownable {
 
     enum CONTRACT_TYPE {
-        CHARACTER, EVER_LIGHT, EQUIPMENT, EQUIPMENT3664
+        INVALID, CHARACTER, EVER_LIGHT, EQUIPMENT, EQUIPMENT3664
     }
 
     address private _directory;
@@ -42,6 +42,7 @@ abstract contract DirectoryBridge is Ownable {
      * @dev Throws if called by any account not in directory.
      */
     modifier onlyDirectory() {
+        require(_directory != address(0), "directory not setting");
         require(IDirectory(_directory).getType(_msgSender()) > 0, "Not invalid caller");
         _;
     }

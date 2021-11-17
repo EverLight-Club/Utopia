@@ -94,7 +94,7 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
       emit WithValue(msg.value);
   }
 
-  function mint(string memory name, uint256 occupation, address recommender) external payable {
+  function mintNew(string memory name, uint256 occupation, address recommender) external payable {
     // one address can only apply once
     require(!_accountList[tx.origin]._creationFlag, "Only once");
 
