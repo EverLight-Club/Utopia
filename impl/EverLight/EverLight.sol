@@ -88,13 +88,19 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
   function queryMapInfo() public view returns (address[] memory addresses) {
     addresses = _mapContracts;
   }
-  
-  event WithValue(uint256 balance);
-  function mintWithValue() external payable { 
-      emit WithValue(msg.value);
-  }
 
-  function mintNew(string memory name, uint256 occupation, address recommender) external payable {
+  // ============= 测试代码部分 ==============
+  event WithValue(uint256 balance, address addr);
+  function mintWithValue() external payable { 
+      require(msg.value != 0, "mintWithValue:msg.value is zero");
+      address addr = getAddress(uint32(CONTRACT_TYPE.CHARACTER));
+      Character character = Character(addr);
+      character.mintCharacter(msg.sender, msg.sender, 11, "name11",0);
+      emit WithValue(msg.value, addr);
+  }
+  // ===========================================
+
+  function mintNew(string memory name, address recommender, uint256 occupation) external payable {
     // one address can only apply once
     require(!_accountList[tx.origin]._creationFlag, "Only once");
 
@@ -102,7 +108,7 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     uint32 decrTimes;
     uint256 applyFee = _config._baseFee + _config._totalCreateNum / _config._incrPerNum * _config._incrFee;
     if (_config._latestCreateBlock != 0) {
-      decrTimes = uint32( block.number - _config._latestCreateBlock ) / _config._decrBlockNum;
+      decrTimes = uint32(block.number - _config._latestCreateBlock ) / _config._decrBlockNum;
     }
     
     uint decrFee = (_config._totalDecrTimes + decrTimes) * _config._decrFee;

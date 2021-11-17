@@ -47,7 +47,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         //_mintBatch(attrIds, names, symbols, uris);
     }
 
-    function mintCharacter(address recipient, address recommender, uint256 tokenId, string memory name, EOCCUPATION occupation) external onlyDirectory {
+    function mintCharacter(address recipient, address recommender, uint256 tokenId, string memory name, uint256 occupation) external payable onlyDirectory {
         require(recipient != address(0), "recipient invalid");
         require(!_exists(tokenId), "tokenId already exists");
         require(getCharacterId(name) == 0, "Name already exist");
@@ -228,7 +228,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         _batchAttach(tokenId, attrIds, currValue, texts);*/
     }
 
-    function _initAttribute(uint256 tokenId, string memory name, EOCCUPATION occupation, ESEX sex) internal {
+    function _initAttribute(uint256 tokenId, string memory name, uint256 occupation, ESEX sex) internal {
        /* uint256[] memory attrIds = [uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
                                     uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
                                     uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), uint256(CHARACTERATTR.CHARACTER_POINTS), 
@@ -279,7 +279,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         return attrIds;
     }
 
-    function _getInitAttributeAmounts(EOCCUPATION occupation, ESEX sex) internal view returns(uint256[] memory) {
+    function _getInitAttributeAmounts(uint256 occupation, ESEX sex) internal view returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](12);
         {(
             amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]
