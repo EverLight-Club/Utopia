@@ -12,6 +12,10 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
 
     uint256 public _totalToken;
 
+    constructor() {
+        initialize();
+    }
+
     function initialize() public initializer {
         __ERC3664_init();
         __DirectoryBridge_init();
@@ -63,7 +67,7 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         _attach(tokenId, attrId, amount, text, isPrimary);
     }
 
-    function mintBatch(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyDirectory {
+    function mintBatch(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyOwner {
         _mintBatch(attrIds, names, symbols, uris);
     }
 
@@ -87,7 +91,7 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
     }
     
     function _getInitAttributeTexts(string memory name) internal pure returns(bytes[] memory) {
-        bytes[] memory texts = new bytes[](20);
+        bytes[] memory texts = new bytes[](21);
         {
             (
                 texts[0],texts[1],texts[2],texts[3],texts[4]
@@ -116,17 +120,17 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         }
         {
             (
-                texts[15],texts[16],texts[17],texts[18],texts[19] 
+                texts[15],texts[16],texts[17],texts[18],texts[19] ,texts[20] 
             )  = 
             (
-                bytes(""), bytes(""), bytes(""), bytes(""), bytes("")
+                bytes(""), bytes(""), bytes(""), bytes(""), bytes(""),bytes("")
             );
         }
         return texts;
     }
     
     function _getInitAttributeAmounts(uint256 tokenId, uint256 position, uint256 level, uint256 rarity, uint256 suitId) internal pure returns(uint256[] memory){
-        uint256[] memory amounts = new uint256[](20);
+        uint256[] memory amounts = new uint256[](21);
         {
             (
                 amounts[0],amounts[1],amounts[2],amounts[3],amounts[4]
@@ -153,17 +157,17 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         }
         {
             (
-                amounts[15],amounts[16],amounts[17],amounts[18],amounts[19] 
+                amounts[15],amounts[16],amounts[17],amounts[18],amounts[19],amounts[20]  
             )  = 
             (
-                0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0
             );
         }
         return amounts;
     }
     
     function _getInitAttributeAttrIds() internal pure returns(uint256[] memory){
-        uint256[] memory attrIds = new uint256[](20);
+        uint256[] memory attrIds = new uint256[](21);
         { 
             (
                 attrIds[0],attrIds[1],attrIds[2],attrIds[3],attrIds[4]
@@ -179,9 +183,9 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
                 attrIds[5],attrIds[6],attrIds[7],attrIds[8],attrIds[9]
             )  = 
             (
-                 uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), 
+                uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), uint256(EQUIPMENTATTR.EQUIPMENT_CREATED), 
                 uint256(EQUIPMENTATTR.LEVEL_LIMIT), uint256(EQUIPMENTATTR.SEX_LIMIT), 
-                uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_LIMIT)
+                uint256(EQUIPMENTATTR.OCCUPATION_LIMIT)
             );
         }
         { 
@@ -189,17 +193,18 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
                 attrIds[10],attrIds[11],attrIds[12],attrIds[13],attrIds[14]
             )  = 
             (
-                uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), 
-                uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_BONUS), 
-                uint256(EQUIPMENTATTR.DEXTERITY_BONUS)
+                uint256(EQUIPMENTATTR.STRENGTH_LIMIT), uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), 
+                uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), 
+                uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_BONUS) 
+                
             );
         }
         { 
             (
-                attrIds[15],attrIds[16],attrIds[17],attrIds[18],attrIds[19] 
+                attrIds[15],attrIds[16],attrIds[17],attrIds[18],attrIds[19],attrIds[20]
             )  = 
             (
-                uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), 
+                uint256(EQUIPMENTATTR.DEXTERITY_BONUS), uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), 
                 uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), uint256(EQUIPMENTATTR.ATTACK_BONUS), 
                 uint256(EQUIPMENTATTR.DEFENSE_BONUS), uint256(EQUIPMENTATTR.SPEED_BONUS)
             );

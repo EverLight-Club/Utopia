@@ -33,6 +33,8 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
   address public _goverContract;                     // address of governance contract
   address public _tokenContract;                     // address of token contract
   address[] private _mapContracts;                   // addresses of map contracts 
+
+  event NewCharacter(address owner, uint256 characterId);
   
   function initialize() public initializer {
     __DirectoryBridge_init();

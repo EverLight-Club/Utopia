@@ -45,21 +45,20 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     // @dev 批量创建装备（对于新角色，进行初始化创建时调用该接口）
-    function mintBatchEquipment(address recipient, uint256 characterId, uint8 maxPosition) external onlyDirectory {
+    function mintBatchEquipment(address recipient, uint256 characterId, uint8 maxPosition) external payable onlyDirectory {
         for(uint256 i = 0; i < maxPosition; i++) {
             _mintEquipmentWithCharacter(recipient, characterId, uint8(i));
         }
     }
 
     // @dev 创建装备，为指定角色创建指定位置的装备
-    function mintEquipment(address recipient, uint256 characterId, uint8 position) external onlyDirectory {
+    function mintEquipment(address recipient, uint256 characterId, uint8 position) external payable onlyDirectory {
         _mintEquipmentWithCharacter(recipient, characterId, position);
     }
 
     function _mintEquipmentWithCharacter(address recipient, uint256 characterId, uint8 position) internal {
         IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
-        //require(character.exists(characterId), "characterId not exists");
-        require(character.ownerOf(characterId) == tx.origin, "characterId !owner");
+        //require(character.ownerOf(characterId) == tx.origin, "characterId !owner");
         uint256 tokenId = _mintEquipment(recipient, position, "", 0, 0, 1);
         _characterEquipments[characterId].push(tokenId);
         _equipmentCharacters[tokenId] = characterId;
@@ -117,7 +116,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     function setSuitFlags(uint256 suitId, address owner) external onlyDirectory {
-        _suitFlag[suitId] = owner;
+        _suitFlag[uint32(suitId)] = owner;
     }
 
     // @dev 查看套装ID的所有者
