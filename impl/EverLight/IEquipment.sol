@@ -16,7 +16,7 @@ interface IEquipment {
 
     function querySuitOwner(uint32 suitId) external view returns (address);
 
-    function setSuitFlags(uint32 suitId, address owner) external;
+    function setSuitFlags(uint32 suitId, address _owner) external;
 
     function setNameFlags(string memory name, bool flags) external;
 }
