@@ -47,7 +47,7 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     _config._incrFee = 0.001 * 10 ** 18; 
     _config._decrBlockNum = 25000;       
     _config._decrFee = 0.001 * 10 ** 18;
-    _config._maxPosition = 11;
+    _config._maxPosition = 3;
     _config._luckyStonePrice = 2000;    
   }
 
@@ -90,17 +90,6 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
   function queryMapInfo() public view returns (address[] memory addresses) {
     addresses = _mapContracts;
   }
-
-  // ============= 测试代码部分 ==============
-  event WithValue(uint256 balance, address addr);
-  function mintWithValue() external payable { 
-      require(msg.value != 0, "mintWithValue:msg.value is zero");
-      address addr = getAddress(uint32(CONTRACT_TYPE.CHARACTER));
-      Character character = Character(addr);
-      character.mintCharacter(msg.sender, msg.sender, 11, "name11",0);
-      emit WithValue(msg.value, addr);
-  }
-  // ===========================================
 
   function mintNew(string memory name, address recommender, uint256 occupation) external payable {
     // one address can only apply once
@@ -150,6 +139,8 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     // todo: 批量调用装备合约，完成各position装备的初始化（包含幸运值的使用，通过参数传入，参考：_createCharacter）
     ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER))).mintCharacter(msg.sender, recommender, characterId, name, occupation);
     IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).mintBatchEquipment(msg.sender, characterId, uint8(_config._maxPosition));
+  
+    emit NewCharacter(msg.sender, characterId);
   }
 
   function exchangeToken(uint32 mapId, uint256[] memory mapTokenList) external {
