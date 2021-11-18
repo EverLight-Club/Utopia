@@ -221,7 +221,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         uint256 position = equipment3664.balanceOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION));
         uint256[] storage equipmentList = _characterEquipments[characterId];
 
-        require(equipmentList.length == Genesis.MAX_EQUIPMENT, "No equipment found");
+        //require(equipmentList.length == Genesis.MAX_EQUIPMENT, "No equipment found");
         require(equipmentList[position] == tokenId, "No equipment found");
 
         equipmentList[position] = 0;
