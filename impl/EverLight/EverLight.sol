@@ -138,7 +138,8 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     // todo: 角色初始化之后还需要进行装备信息初始化
     // todo: 批量调用装备合约，完成各position装备的初始化（包含幸运值的使用，通过参数传入，参考：_createCharacter）
     ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER))).mintCharacter(msg.sender, recommender, characterId, name, occupation);
-    IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).mintBatchEquipment(msg.sender, characterId, uint8(_config._maxPosition));
+    address equipmentProxyAddr = getAddress(uint32(CONTRACT_TYPE.EQUIPMENT));
+    IEquipment(equipmentProxyAddr).mintBatchEquipment(equipmentProxyAddr, characterId, uint8(_config._maxPosition));
   
     emit NewCharacter(msg.sender, characterId);
   }
