@@ -340,7 +340,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         require(!_nameFlag[uint256(keccak256(abi.encodePacked(name)))], "Error name");
 
         require(equipment3664.balanceOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL)) == 9, "level != 9");
-        require(equipment3664.balanceOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_CREATED)) == 1, "createFlag=true|1");
+        require(equipment3664.balanceOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_CREATED)) == 0, "createFlag=true|1");
         
         // create new parts type
         uint8 position = uint8(equipment3664.balanceOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION)));
