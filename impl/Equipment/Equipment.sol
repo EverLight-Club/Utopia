@@ -200,7 +200,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         }
 
         _transfer(_msgSender(), address(this), tokenId);
-        equipmentList[position] = tokenId;
+        _characterEquipments[characterId][position] = tokenId;
         _equipmentCharacters[tokenId] = characterId;
     }
 
