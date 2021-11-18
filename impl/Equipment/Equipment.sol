@@ -13,6 +13,7 @@ import "../../library/Genesis.sol";
 import "../../utils/Strings.sol";
 import "../../proxy/Ownable.sol";
 import "./Equipment3664.sol";
+import "../../utils/Base64.sol";
 
 contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgradeable, IERC721ReceiverUpgradeable {
     
@@ -42,7 +43,80 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory output) {
+        require(_exists(tokenId), 'Token does not exist');
+        output = tokenURIForEquipment(tokenId);
+        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "Bag #', tokenId.toString(), '", "description": "The first fully autonomous decentralized NFT Metaverse game.", "image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '"}'))));
+        output = string(abi.encodePacked('data:application/json;base64,', json));
+        return output;
+    }
 
+    function tokenURIForEquipment(uint256 tokenId) internal view returns (string memory output) {
+        string[23] memory parts;
+        {
+            parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
+            parts[1] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_ID), false);
+            parts[2] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME), true);
+            parts[3] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), false);
+            parts[4] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), false);
+            parts[5] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), false);
+        }
+        {
+            parts[6] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), false);
+            parts[7] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_CREATED), false);
+            parts[8] = pluck(tokenId, uint256(EQUIPMENTATTR.LEVEL_LIMIT), false);
+            parts[9] = pluck(tokenId, uint256(EQUIPMENTATTR.SEX_LIMIT), false);
+            parts[10] = pluck(tokenId, uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), false);
+        }
+        {
+            parts[11] = pluck(tokenId, uint256(EQUIPMENTATTR.STRENGTH_LIMIT), false);
+            parts[12] = pluck(tokenId, uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), false);
+            parts[13] = pluck(tokenId, uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), false);
+            parts[14] = pluck(tokenId, uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), false);
+            parts[15] = pluck(tokenId, uint256(EQUIPMENTATTR.STRENGTH_BONUS), false);
+        }
+        {
+            parts[16] = pluck(tokenId, uint256(EQUIPMENTATTR.DEXTERITY_BONUS), false);
+            parts[17] = pluck(tokenId, uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), false);
+            parts[18] = pluck(tokenId, uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), false);
+            parts[19] = pluck(tokenId, uint256(EQUIPMENTATTR.ATTACK_BONUS), false);
+            parts[20] = pluck(tokenId, uint256(EQUIPMENTATTR.DEFENSE_BONUS), false);
+            parts[21] = pluck(tokenId, uint256(EQUIPMENTATTR.SPEED_BONUS), false);
+            parts[22] = '</text></svg>';
+        }
+
+        {
+            output = string(abi.encodePacked(output, parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
+        }
+        {
+            output = string(abi.encodePacked(output, parts[6], parts[7], parts[8],parts[9], parts[10], parts[11]));
+        }
+        {
+            output = string(abi.encodePacked(output, parts[12], parts[13], parts[14], parts[15], parts[16], parts[17]));
+        }
+        {
+            output = string(abi.encodePacked(output, parts[18], parts[19], parts[20], parts[21], parts[22]));
+        }
+        return output;
+    }
+
+    // attrIds len: 21
+    function pluck(uint256 tokenId, uint256 attrId, bool isText) internal view returns (string memory output) {
+        // 固定位置：不同属性可能对应中文或者值，进行区分
+        // symbol: balance/text
+        string memory symbol = equipment3664.symbol(attrId);
+        uint256 balance = equipment3664.balanceOf(tokenId, attrId);
+        bytes memory text = equipment3664.textOf(tokenId, attrId);
+
+        if(isText){
+            output = string(abi.encodePacked(symbol, ":", string(text)));
+        } else {
+            output = string(abi.encodePacked(symbol, ":", balance.toString()));
+        }
+        /*string memory color = everLight.queryColorByRare(tokenInfo._rare);
+        if(bytes(color).length > 0) {
+          output = string(abi.encodePacked('<a style="fill:', color, ';">', output, '</a>'));
+        }*/
+        return output;
     }
 
     // @dev 批量创建装备（对于新角色，进行初始化创建时调用该接口）

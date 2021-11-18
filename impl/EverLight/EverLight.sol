@@ -51,6 +51,10 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     _config._luckyStonePrice = 2000;    
   }
 
+  function queryColorByRare(uint8 rare) external view returns (string memory color) {
+    return _rareColor[rare];
+  }
+
   function queryPower(uint8 position, uint8 rare) public view returns (uint32 power) {
     return _partsPowerList[position][rare];
   }

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 
 interface IEverLight {
-
+	function queryColorByRare(uint8 rare) external view returns (string memory color);
 	function queryPartsCount(uint8 position) external returns (uint32 count);
 	function queryPartsTypeCount(uint8 position, uint8 rare) external view returns (uint32 count) ;
 	function queryPartsType(uint8 position, uint8 rare, uint256 index) external view returns (uint32 _suitId, string memory name);
