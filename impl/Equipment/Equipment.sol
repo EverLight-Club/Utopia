@@ -51,51 +51,114 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     function tokenURIForEquipment(uint256 tokenId) internal view returns (string memory output) {
-        string[23] memory parts;
-        {
-            parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
-            parts[1] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_ID), false);
-            parts[2] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME), true);
-            parts[3] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), false);
-            parts[4] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), false);
-            parts[5] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), false);
+        string[] memory parts = new string[](2 * 20 + 3);
+        parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';     
+        uint256 index = 1;
+        uint256 yValue = 20;
+        for(uint i = 0; i < 20; i++) {
+            yValue = yValue + 20;
+            if(i == 1){
+                parts[index] = pluck(tokenId, i, true);
+            }else{
+                parts[index] = pluck(tokenId, i, false);
+            }
+            index = index + 1;
+            parts[index] = string(abi.encodePacked('</text><text x="10" y="',yValue.toString(),'" class="base">')); // '</text><text x="10" y="40" class="base">';
+            index++;
         }
-        {
-            parts[6] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), false);
-            parts[7] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_CREATED), false);
-            parts[8] = pluck(tokenId, uint256(EQUIPMENTATTR.LEVEL_LIMIT), false);
-            parts[9] = pluck(tokenId, uint256(EQUIPMENTATTR.SEX_LIMIT), false);
-            parts[10] = pluck(tokenId, uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), false);
-        }
-        {
-            parts[11] = pluck(tokenId, uint256(EQUIPMENTATTR.STRENGTH_LIMIT), false);
-            parts[12] = pluck(tokenId, uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), false);
-            parts[13] = pluck(tokenId, uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), false);
-            parts[14] = pluck(tokenId, uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), false);
-            parts[15] = pluck(tokenId, uint256(EQUIPMENTATTR.STRENGTH_BONUS), false);
-        }
-        {
-            parts[16] = pluck(tokenId, uint256(EQUIPMENTATTR.DEXTERITY_BONUS), false);
-            parts[17] = pluck(tokenId, uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), false);
-            parts[18] = pluck(tokenId, uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), false);
-            parts[19] = pluck(tokenId, uint256(EQUIPMENTATTR.ATTACK_BONUS), false);
-            parts[20] = pluck(tokenId, uint256(EQUIPMENTATTR.DEFENSE_BONUS), false);
-            parts[21] = pluck(tokenId, uint256(EQUIPMENTATTR.SPEED_BONUS), false);
-            parts[22] = '</text></svg>';
-        }
+        //parts[index] = string(abi.encodePacked("totalPower:[", uint256(totalPower).toString(), "]"));
+        //index = index + 1;
+        parts[index] = '</text></svg>';
 
-        {
-            output = string(abi.encodePacked(output, parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
+        // {
+        //     parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
+        //     parts[1] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_ID), false);
+        //     parts[2] = string(abi.encodePacked('</text><text x="10" y="40" class="base">'));
+        //     parts[3] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME), true);
+        //     parts[4] = string(abi.encodePacked('</text><text x="10" y="60" class="base">'));
+        //     parts[5] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), false);
+        //     parts[6] = string(abi.encodePacked('</text><text x="10" y="80" class="base">'));
+        //     parts[7] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), false);
+        //     parts[8] = string(abi.encodePacked('</text><text x="10" y="100" class="base">'));
+        //     parts[9] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), false);
+        //     parts[10] = string(abi.encodePacked('</text><text x="10" y="120" class="base">'));
+        // }
+        // {
+        //     parts[11] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), false);
+        //     parts[12] = string(abi.encodePacked('</text><text x="10" y="140" class="base">'));
+        //     parts[13] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_CREATED), false);
+        //     parts[14] = string(abi.encodePacked('</text><text x="10" y="160" class="base">'));
+        //     parts[15] = pluck(tokenId, uint256(EQUIPMENTATTR.LEVEL_LIMIT), false);
+        //     parts[16] = string(abi.encodePacked('</text><text x="10" y="180" class="base">'));
+        //     parts[17] = pluck(tokenId, uint256(EQUIPMENTATTR.SEX_LIMIT), false);
+        //     parts[18] = string(abi.encodePacked('</text><text x="10" y="200" class="base">'));
+        //     parts[19] = pluck(tokenId, uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), false);
+        //     parts[20] = string(abi.encodePacked('</text><text x="10" y="220" class="base">'));
+        // }
+        // {
+        //     parts[21] = pluck(tokenId, uint256(EQUIPMENTATTR.STRENGTH_LIMIT), false);
+        //     parts[22] = string(abi.encodePacked('</text><text x="10" y="240" class="base">'));
+        //     parts[23] = pluck(tokenId, uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), false);
+        //     parts[24] = string(abi.encodePacked('</text><text x="10" y="260" class="base">'));
+        //     parts[25] = pluck(tokenId, uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), false);
+        //     parts[26] = string(abi.encodePacked('</text><text x="10" y="280" class="base">'));
+        //     parts[27] = pluck(tokenId, uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), false);
+        //     parts[28] = string(abi.encodePacked('</text><text x="10" y="300" class="base">'));
+        //     parts[29] = pluck(tokenId, uint256(EQUIPMENTATTR.STRENGTH_BONUS), false);
+        //     parts[30] = string(abi.encodePacked('</text><text x="10" y="320" class="base">'));
+        // }
+        // {
+        //     parts[31] = pluck(tokenId, uint256(EQUIPMENTATTR.DEXTERITY_BONUS), false);
+        //     parts[32] = string(abi.encodePacked('</text><text x="10" y="340" class="base">'));
+        //     parts[33] = pluck(tokenId, uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), false);
+        //     parts[34] = string(abi.encodePacked('</text><text x="10" y="360" class="base">'));
+        //     parts[35] = pluck(tokenId, uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), false);
+        //     parts[36] = string(abi.encodePacked('</text><text x="10" y="380" class="base">'));
+        //     parts[37] = pluck(tokenId, uint256(EQUIPMENTATTR.ATTACK_BONUS), false);
+        //     parts[38] = string(abi.encodePacked('</text><text x="10" y="400" class="base">'));
+        //     parts[39] = pluck(tokenId, uint256(EQUIPMENTATTR.DEFENSE_BONUS), false);
+        //     parts[40] = string(abi.encodePacked('</text><text x="10" y="420" class="base">'));
+        //     parts[41] = pluck(tokenId, uint256(EQUIPMENTATTR.SPEED_BONUS), false);
+        //     parts[42] = '</text></svg>';
+        // }
+        uint n = 0;
+        while(n < parts.length){  // 5
+          if(n % 2 == 0){ // 0, 2, 4, 6, 8
+            output = string(abi.encodePacked(output, parts[n], parts[n+1]));
+          }
+          n = n + 2;
+          if(n == (parts.length - 1)){
+            output = string(abi.encodePacked(output, parts[n]));
+            break;
+          }
+          if(n >= parts.length){
+            break;
+          } 
         }
-        {
-            output = string(abi.encodePacked(output, parts[6], parts[7], parts[8],parts[9], parts[10], parts[11]));
-        }
-        {
-            output = string(abi.encodePacked(output, parts[12], parts[13], parts[14], parts[15], parts[16], parts[17]));
-        }
-        {
-            output = string(abi.encodePacked(output, parts[18], parts[19], parts[20], parts[21], parts[22]));
-        }
+        // {
+        //     output = string(abi.encodePacked(output, parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
+        // }
+        // {
+        //     output = string(abi.encodePacked(output, parts[6], parts[7], parts[8],parts[9], parts[10], parts[11]));
+        // }
+        // {
+        //     output = string(abi.encodePacked(output, parts[12], parts[13], parts[14], parts[15], parts[16], parts[17]));
+        // }
+        // {
+        //     output = string(abi.encodePacked(output, parts[18], parts[19], parts[20], parts[21], parts[22]));
+        // }
+        // {
+        //     output = string(abi.encodePacked(output, parts[23], parts[24], parts[25], parts[26], parts[27]));
+        // }
+        // {
+        //     output = string(abi.encodePacked(output, parts[28], parts[29], parts[30], parts[31], parts[32]));
+        // }
+        // {
+        //     output = string(abi.encodePacked(output, parts[33], parts[34], parts[35], parts[36], parts[37]));
+        // }
+        // {
+        //     output = string(abi.encodePacked(output, parts[38], parts[39], parts[40], parts[41], parts[42]));
+        // }
         return output;
     }
 
@@ -354,58 +417,58 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     // @dev 升级身上已穿的装备
-    function upgradeWearToken(uint256 characterId, uint256 tokenId) external {
-        IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
-        require(character.ownerOf(characterId) == _msgSender(), "character !owner");
-        require(ownerOf(tokenId) == _msgSender(), "equipment !owner");
+    // function upgradeWearToken(uint256 characterId, uint256 tokenId) external {
+    //     IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
+    //     require(character.ownerOf(characterId) == _msgSender(), "character !owner");
+    //     require(ownerOf(tokenId) == _msgSender(), "equipment !owner");
         
-        uint256[] memory attrIds = new uint256[](5);
+    //     uint256[] memory attrIds = new uint256[](5);
 
-        (
-            attrIds[0], attrIds[1], attrIds[2], attrIds[3], attrIds[4]
-        ) = 
-        (
-            uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), 
-            uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), 
-            uint256(EQUIPMENTATTR.EQUIPMENT_SUITID)
-        );
+    //     (
+    //         attrIds[0], attrIds[1], attrIds[2], attrIds[3], attrIds[4]
+    //     ) = 
+    //     (
+    //         uint256(EQUIPMENTATTR.EQUIPMENT_ID), uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), 
+    //         uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), 
+    //         uint256(EQUIPMENTATTR.EQUIPMENT_SUITID)
+    //     );
         
-        uint256[] memory newTokenAttrAmount = equipment3664.balanceOfBatch(tokenId, attrIds);
+    //     uint256[] memory newTokenAttrAmount = equipment3664.balanceOfBatch(tokenId, attrIds);
         
-        //uint8 position = _tokenList[tokenId]._position;
-        //uint256 partsId = _characterList[characterId]._tokenList[position];
-        uint256 wearedEquipmentId = _characterEquipments[characterId][newTokenAttrAmount[1]];
+    //     //uint8 position = _tokenList[tokenId]._position;
+    //     //uint256 partsId = _characterList[characterId]._tokenList[position];
+    //     uint256 wearedEquipmentId = _characterEquipments[characterId][newTokenAttrAmount[1]];
 
-        uint256[] memory oldTokenAttrAmount = equipment3664.balanceOfBatch(wearedEquipmentId, attrIds);
+    //     uint256[] memory oldTokenAttrAmount = equipment3664.balanceOfBatch(wearedEquipmentId, attrIds);
 
-        // check pats can upgrade
-        //require(keccak256(equipment3664.textOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))) == keccak256(equipment3664.textOf(wearedEquipmentId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))), "!token");
-        require(newTokenAttrAmount[2] == oldTokenAttrAmount[2], "!level");
-        require(newTokenAttrAmount[3] == oldTokenAttrAmount[3], "!rare");
-        require(newTokenAttrAmount[2] < 9, "Max level");
+    //     // check pats can upgrade
+    //     //require(keccak256(equipment3664.textOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))) == keccak256(equipment3664.textOf(wearedEquipmentId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))), "!token");
+    //     require(newTokenAttrAmount[2] == oldTokenAttrAmount[2], "!level");
+    //     require(newTokenAttrAmount[3] == oldTokenAttrAmount[3], "!rare");
+    //     require(newTokenAttrAmount[2] < 9, "Max level");
 
-        // todo: 此处对于新装备的算力值待定
-        IEverLight everLight = IEverLight(getAddress(uint32(CONTRACT_TYPE.EVER_LIGHT)));
-        uint32 basePower = everLight.queryPower(uint8(oldTokenAttrAmount[1]), uint8(oldTokenAttrAmount[3]));
+    //     // todo: 此处对于新装备的算力值待定
+    //     IEverLight everLight = IEverLight(getAddress(uint32(CONTRACT_TYPE.EVER_LIGHT)));
+    //     uint32 basePower = everLight.queryPower(uint8(oldTokenAttrAmount[1]), uint8(oldTokenAttrAmount[3]));
 
-        // basepower = (basepower * 1.25 ** level) * +1.1
-        //uint32 basePower = _partsInfo._partsPowerList[position][_tokenList[partsId]._rare];
-        basePower = uint32(basePower * (125 ** (oldTokenAttrAmount[2] - 1)) / (100 ** (oldTokenAttrAmount[2] - 1)));
-        uint32 randPower = uint32(basePower < 10 ? _getRandom(uint256(256).toString()) % 1 : _getRandom(uint256(256).toString()) % (basePower / 10));
+    //     // basepower = (basepower * 1.25 ** level) * +1.1
+    //     //uint32 basePower = _partsInfo._partsPowerList[position][_tokenList[partsId]._rare];
+    //     basePower = uint32(basePower * (125 ** (oldTokenAttrAmount[2] - 1)) / (100 ** (oldTokenAttrAmount[2] - 1)));
+    //     uint32 randPower = uint32(basePower < 10 ? _getRandom(uint256(256).toString()) % 1 : _getRandom(uint256(256).toString()) % (basePower / 10));
 
-        // 创造新的装备，同时默认穿在角色身上
-        // address recipient, uint256 position, string memory name, uint256 suitId, uint256 rarity, uint256 level
-        uint256 newTokenId = _mintEquipment(_msgSender(), oldTokenAttrAmount[1], string(equipment3664.textOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))), 
-                        oldTokenAttrAmount[4], oldTokenAttrAmount[3], oldTokenAttrAmount[2] + 1);
+    //     // 创造新的装备，同时默认穿在角色身上
+    //     // address recipient, uint256 position, string memory name, uint256 suitId, uint256 rarity, uint256 level
+    //     uint256 newTokenId = _mintEquipment(_msgSender(), oldTokenAttrAmount[1], string(equipment3664.textOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))), 
+    //                     oldTokenAttrAmount[4], oldTokenAttrAmount[3], oldTokenAttrAmount[2] + 1);
         
-        _transfer(_msgSender(), address(this), newTokenId);
+    //     _transfer(_msgSender(), address(this), newTokenId);
 
-        _characterEquipments[characterId][oldTokenAttrAmount[1]] = newTokenId;
+    //     _characterEquipments[characterId][oldTokenAttrAmount[1]] = newTokenId;
 
-        // remove old parts
-        _burn(tokenId);
-        delete _equipmentCharacters[tokenId];
-    }
+    //     // remove old parts
+    //     _burn(tokenId);
+    //     delete _equipmentCharacters[tokenId];
+    // }
 
     // @dev 创建装备
     function newTokenType(uint256 tokenId, string memory name, uint32 suitId) external {
