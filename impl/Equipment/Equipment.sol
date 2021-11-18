@@ -197,6 +197,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     function _mintEquipmentWithCharacter(address recipient, uint256 characterId, uint8 position) internal {
         IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
         //require(character.ownerOf(characterId) == tx.origin, "characterId !owner");
+        //todo: 此处需要随机获取装备名称、稀有度等信息，然后进行保存；
         uint256 tokenId = _mintEquipment(recipient, position, "", 0, 0, 1);
         _characterEquipments[characterId].push(tokenId);
         _equipmentCharacters[tokenId] = characterId;
