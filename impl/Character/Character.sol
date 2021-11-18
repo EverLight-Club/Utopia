@@ -8,9 +8,13 @@ import "../Directory/DirectoryBridge.sol";
 import "../../utils/ReentrancyGuard.sol";
 import "../../interfaces/ICharacter.sol";
 import "../../library/Genesis.sol";
+import "../../utils/Base64.sol";
+import "../../utils/Strings.sol";
 
 contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeable, DirectoryBridge, ReentrancyGuard {
     
+    using Strings for uint256;
+
     uint256[4][3] public INIT_ATTR = [[100, 100, 100, 100], 
                                       [100, 100, 100, 100], 
                                       [100, 100, 100, 100]];
@@ -83,71 +87,67 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory output) {
-        // require(_exists(tokenId), 'Token does not exist');
-        // output = tokenURIForCharacter(tokenId);
-        // string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "Bag #', tokenId.toString(), '", "description": "The first fully autonomous decentralized NFT Metaverse game.", "image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '"}'))));
-        // output = string(abi.encodePacked('data:application/json;base64,', json));
-        // return output;
+        require(_exists(tokenId), 'Token does not exist');
+        output = tokenURIForCharacter(tokenId);
+        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "Bag #', tokenId.toString(), '", "description": "The first fully autonomous decentralized NFT Metaverse game.", "image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '"}'))));
+        output = string(abi.encodePacked('data:application/json;base64,', json));
+        return output;
     }
 
-    // function tokenURIForCharacter(uint256 tokenId) internal view returns (string memory) {
-    //     (, uint32 powerFactor, uint256[] memory tokenList, uint32 totalPower) = everLightContract.queryCharacter(tokenId);
-    //     string[] memory parts = new string[](2 * tokenList.length + 3);
-    //     parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
-        
-    //     uint256 index = 1;
-    //     uint256 yValue = 20;
-    //     for(uint i = 0; i < tokenList.length; i++) {
-    //       yValue = yValue + 20;
-    //       parts[index] = pluck(tokenList[i], uint8(i));
-    //       index = index + 1;
-    //       parts[index] = string(abi.encodePacked('</text><text x="10" y="',yValue.toString(),'" class="base">')); // '</text><text x="10" y="40" class="base">';
-    //       index++;
-    //     }
-    //     parts[index] = string(abi.encodePacked("totalPower:[", uint256(totalPower).toString(), "]"));
-    //     index = index + 1;
-    //     parts[index] = '</text></svg>';
+    function tokenURIForCharacter(uint256 tokenId) internal view returns (string memory output) {
+        string[] memory parts = new string[](2 * 12 + 3);
+        parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';     
+        uint256 index = 1;
+        uint256 yValue = 20;
+        for(uint i = 0; i < 12; i++) {
+            yValue = yValue + 20;
+            if(i == 0){
+                parts[index] = pluck(tokenId, i, true);
+            }else{
+                parts[index] = pluck(tokenId, i, false);
+            }
+            index = index + 1;
+            parts[index] = string(abi.encodePacked('</text><text x="10" y="',yValue.toString(),'" class="base">')); // '</text><text x="10" y="40" class="base">';
+            index++;
+        }
+        parts[index] = '</text></svg>';
 
-    //     string memory output = "";
-    //     uint n = 0;
-    //     while(n < parts.length){  // 5
-    //       if(n % 2 == 0){ // 0, 2, 4, 6, 8
-    //         output = string(abi.encodePacked(output, parts[n], parts[n+1]));
-    //       }
-    //       n = n + 2;
-    //       if(n == (parts.length - 1)){
-    //         output = string(abi.encodePacked(output, parts[n]));
-    //         break;
-    //       }
-    //       if(n >= parts.length){
-    //         break;
-    //       } 
-    //     }
-    //     return output;
-    // }
+        uint n = 0;
+        while(n < parts.length){  // 5
+          if(n % 2 == 0){ // 0, 2, 4, 6, 8
+            output = string(abi.encodePacked(output, parts[n], parts[n+1]));
+          }
+          n = n + 2;
+          if(n == (parts.length - 1)){
+            output = string(abi.encodePacked(output, parts[n]));
+            break;
+          }
+          if(n >= parts.length){
+            break;
+          } 
+        }
+        return output;
+    }
 
-    // function pluck(uint256 tokenId, uint8 position) internal view returns (string memory output) {
-    //     LibEverLight.TokenInfo memory tokenInfo = everLightContract.queryToken(tokenId);
-    //     if(tokenInfo._tokenId == 0){
-    //       output = string(abi.encodePacked(uint256(position).toString(), ":?"));
-    //       return output;
-    //     }
-    //     if(tokenInfo._position == 99){
-    //       output = string(abi.encodePacked(uint256(tokenInfo._position).toString(), ":", tokenInfo._name));
-    //       return output;
-    //     }
-    //     if(tokenInfo._createFlag) {
-    //       output = string(abi.encodePacked(uint256(tokenInfo._position).toString(), ":", tokenInfo._name, "(+", uint256(tokenInfo._level).toString(), "E)[", uint256(tokenInfo._power).toString(), "]"));
-    //     } else {
-    //       output = string(abi.encodePacked(uint256(tokenInfo._position).toString(), ":", tokenInfo._name, "(+", uint256(tokenInfo._level).toString(), ")[", uint256(tokenInfo._power).toString(), "]"));
-    //     }
-        
-    //     string memory color = everLightContract.queryColorByRare(tokenInfo._rare);
-    //     if(bytes(color).length > 0) {
-    //       output = string(abi.encodePacked('<a style="fill:', color, ';">', output, '</a>'));
-    //     }
-    //     return output;
-    // }
+    // attrIds len: 21
+    function pluck(uint256 tokenId, uint256 attrId, bool isText) internal view returns (string memory output) {
+        // 固定位置：不同属性可能对应中文或者值，进行区分
+        // symbol: balance/text
+        string memory symbol = symbol(attrId);
+        uint256 balance = balanceOf(tokenId, attrId);
+        bytes memory text = textOf(tokenId, attrId);
+
+        if(isText){
+            output = string(abi.encodePacked(symbol, ":", string(text)));
+        } else {
+            output = string(abi.encodePacked(symbol, ":", balance.toString()));
+        }
+        /*string memory color = everLight.queryColorByRare(tokenInfo._rare);
+        if(bytes(color).length > 0) {
+          output = string(abi.encodePacked('<a style="fill:', color, ';">', output, '</a>'));
+        }*/
+        return output;
+    }
 
     function getCharacterId(string memory name) public view returns (uint256) {
         return _characterName[name];
@@ -281,18 +281,22 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
 
     function _getInitAttributeAmounts(uint256 occupation, ESEX sex) internal view returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](12);
-        {(
-            amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]
-        ) = 
-        (
-            1, uint256(occupation), uint256(sex), 1, 0
-        );}
-        {(
-            amounts[5], amounts[6], amounts[7], amounts[8], amounts[9]
-        ) = 
-        (
-            0, 100, 100, 100, 100
-        );}
+        {
+            (
+                amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]
+            ) = 
+            (
+                1, uint256(occupation), uint256(sex), 1, 0
+            );
+        }
+        {
+            (
+                amounts[5], amounts[6], amounts[7], amounts[8], amounts[9]
+            ) = 
+            (
+                0, 100, 100, 100, 100
+            );
+        }
         {(
             amounts[10],amounts[11]
         ) = 
