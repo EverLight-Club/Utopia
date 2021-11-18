@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../../token/ERC721/ERC721EnumerableUpgradeable.sol";
 import "../../token/ERC721/IERC721Upgradeable.sol";
+import "../../token/ERC721/IERC721ReceiverUpgradeable.sol";
 import "../Directory/DirectoryBridge.sol";
 import "../../interfaces/IEquipment.sol";
 import "../../interfaces/ICharacter.sol";
@@ -13,7 +14,7 @@ import "../../utils/Strings.sol";
 import "../../proxy/Ownable.sol";
 import "./Equipment3664.sol";
 
-contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgradeable {
+contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgradeable, IERC721ReceiverUpgradeable {
     
     using Strings for uint256;
     
@@ -376,5 +377,14 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
 
     function _getRandom(string memory purpose) internal view returns (uint256) {
         return uint256(keccak256(abi.encodePacked(block.timestamp, tx.gasprice, tx.origin, purpose)));
+    }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external override returns (bytes4) {
+        return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }
 }
