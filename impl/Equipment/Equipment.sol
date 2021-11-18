@@ -305,7 +305,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         uint256[] memory oldTokenAttrAmount = equipment3664.balanceOfBatch(wearedEquipmentId, attrIds);
 
         // check pats can upgrade
-        require(keccak256(equipment3664.textOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))) == keccak256(equipment3664.textOf(wearedEquipmentId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))), "!token");
+        //require(keccak256(equipment3664.textOf(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))) == keccak256(equipment3664.textOf(wearedEquipmentId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME))), "!token");
         require(newTokenAttrAmount[2] == oldTokenAttrAmount[2], "!level");
         require(newTokenAttrAmount[3] == oldTokenAttrAmount[3], "!rare");
         require(newTokenAttrAmount[2] < 9, "Max level");
