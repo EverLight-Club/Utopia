@@ -154,7 +154,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     function wear(uint256 characterId, uint256[] memory tokenId) external {
         ICharacter character = ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
         require(tokenId.length > 0, "empty equipment");
-        require(character.isApprovedOrOwner(_msgSender(), characterId), "Not owner or approver");
+        require(character.isApprovedOrOwner(_msgSender(), characterId), "Character not owner or approver");
         
         //todo:此处未开放对与角色的校验
         //uint256[] memory attrIds = new uint256[](7);
@@ -166,7 +166,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         //uint256[] memory characterAttrs = character.getBatchAttr(characterId, attrIds);
         uint256[] memory characterAttrs = new uint256[](0);
         for (uint i = 0; i < tokenId.length; ++i) {
-            require(_isApprovedOrOwner(_msgSender(), tokenId[i]), "Not owner or approver");
+            require(_isApprovedOrOwner(_msgSender(), tokenId[i]), "Equipment not owner or approver");
             putOnOne(characterId, characterAttrs, tokenId[i]);
         }
     }
