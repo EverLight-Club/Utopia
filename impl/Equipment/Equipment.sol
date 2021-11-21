@@ -70,57 +70,6 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         //index = index + 1;
         parts[index] = '</text></svg>';
 
-        // {
-        //     parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
-        //     parts[1] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_ID), false);
-        //     parts[2] = string(abi.encodePacked('</text><text x="10" y="40" class="base">'));
-        //     parts[3] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME), true);
-        //     parts[4] = string(abi.encodePacked('</text><text x="10" y="60" class="base">'));
-        //     parts[5] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_POSITION), false);
-        //     parts[6] = string(abi.encodePacked('</text><text x="10" y="80" class="base">'));
-        //     parts[7] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_LEVEL), false);
-        //     parts[8] = string(abi.encodePacked('</text><text x="10" y="100" class="base">'));
-        //     parts[9] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_RARITY), false);
-        //     parts[10] = string(abi.encodePacked('</text><text x="10" y="120" class="base">'));
-        // }
-        // {
-        //     parts[11] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_SUITID), false);
-        //     parts[12] = string(abi.encodePacked('</text><text x="10" y="140" class="base">'));
-        //     parts[13] = pluck(tokenId, uint256(EQUIPMENTATTR.EQUIPMENT_CREATED), false);
-        //     parts[14] = string(abi.encodePacked('</text><text x="10" y="160" class="base">'));
-        //     parts[15] = pluck(tokenId, uint256(EQUIPMENTATTR.LEVEL_LIMIT), false);
-        //     parts[16] = string(abi.encodePacked('</text><text x="10" y="180" class="base">'));
-        //     parts[17] = pluck(tokenId, uint256(EQUIPMENTATTR.SEX_LIMIT), false);
-        //     parts[18] = string(abi.encodePacked('</text><text x="10" y="200" class="base">'));
-        //     parts[19] = pluck(tokenId, uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), false);
-        //     parts[20] = string(abi.encodePacked('</text><text x="10" y="220" class="base">'));
-        // }
-        // {
-        //     parts[21] = pluck(tokenId, uint256(EQUIPMENTATTR.STRENGTH_LIMIT), false);
-        //     parts[22] = string(abi.encodePacked('</text><text x="10" y="240" class="base">'));
-        //     parts[23] = pluck(tokenId, uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), false);
-        //     parts[24] = string(abi.encodePacked('</text><text x="10" y="260" class="base">'));
-        //     parts[25] = pluck(tokenId, uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT), false);
-        //     parts[26] = string(abi.encodePacked('</text><text x="10" y="280" class="base">'));
-        //     parts[27] = pluck(tokenId, uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), false);
-        //     parts[28] = string(abi.encodePacked('</text><text x="10" y="300" class="base">'));
-        //     parts[29] = pluck(tokenId, uint256(EQUIPMENTATTR.STRENGTH_BONUS), false);
-        //     parts[30] = string(abi.encodePacked('</text><text x="10" y="320" class="base">'));
-        // }
-        // {
-        //     parts[31] = pluck(tokenId, uint256(EQUIPMENTATTR.DEXTERITY_BONUS), false);
-        //     parts[32] = string(abi.encodePacked('</text><text x="10" y="340" class="base">'));
-        //     parts[33] = pluck(tokenId, uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), false);
-        //     parts[34] = string(abi.encodePacked('</text><text x="10" y="360" class="base">'));
-        //     parts[35] = pluck(tokenId, uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), false);
-        //     parts[36] = string(abi.encodePacked('</text><text x="10" y="380" class="base">'));
-        //     parts[37] = pluck(tokenId, uint256(EQUIPMENTATTR.ATTACK_BONUS), false);
-        //     parts[38] = string(abi.encodePacked('</text><text x="10" y="400" class="base">'));
-        //     parts[39] = pluck(tokenId, uint256(EQUIPMENTATTR.DEFENSE_BONUS), false);
-        //     parts[40] = string(abi.encodePacked('</text><text x="10" y="420" class="base">'));
-        //     parts[41] = pluck(tokenId, uint256(EQUIPMENTATTR.SPEED_BONUS), false);
-        //     parts[42] = '</text></svg>';
-        // }
         uint n = 0;
         while(n < parts.length){  // 5
           if(n % 2 == 0){ // 0, 2, 4, 6, 8
@@ -135,30 +84,6 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
             break;
           } 
         }
-        // {
-        //     output = string(abi.encodePacked(output, parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
-        // }
-        // {
-        //     output = string(abi.encodePacked(output, parts[6], parts[7], parts[8],parts[9], parts[10], parts[11]));
-        // }
-        // {
-        //     output = string(abi.encodePacked(output, parts[12], parts[13], parts[14], parts[15], parts[16], parts[17]));
-        // }
-        // {
-        //     output = string(abi.encodePacked(output, parts[18], parts[19], parts[20], parts[21], parts[22]));
-        // }
-        // {
-        //     output = string(abi.encodePacked(output, parts[23], parts[24], parts[25], parts[26], parts[27]));
-        // }
-        // {
-        //     output = string(abi.encodePacked(output, parts[28], parts[29], parts[30], parts[31], parts[32]));
-        // }
-        // {
-        //     output = string(abi.encodePacked(output, parts[33], parts[34], parts[35], parts[36], parts[37]));
-        // }
-        // {
-        //     output = string(abi.encodePacked(output, parts[38], parts[39], parts[40], parts[41], parts[42]));
-        // }
         return output;
     }
 
