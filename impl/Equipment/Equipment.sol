@@ -42,6 +42,21 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         equipment3664 = Equipment3664(_equipment3664);
     }
 
+    function queryEquipmentByAddress(address addr, uint256 startIndex) external view returns(uint256[] memory equipmentIdList, uint256 lastIndex){
+        uint256 count = ERC721Upgradeable.balanceOf(addr);
+        equipmentIdList = new uint256[](10);    // default returns 20 records.
+        uint256 index = 1;
+        for(uint256 i = startIndex; i < count; i++) {
+            if(index >= equipmentIdList.length){
+                index = i;
+                break;
+            }
+            equipmentIdList[i] = tokenOfOwnerByIndex(addr, i);
+            index++;
+        }
+        return (equipmentIdList, index);
+    }
+
     function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory output) {
         require(_exists(tokenId), 'Token does not exist');
         output = tokenURIForEquipment(tokenId);
@@ -120,7 +135,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     function _mintEquipmentWithCharacter(address recipient, uint256 characterId, uint8 position) internal {
-        IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
+        //IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
         //require(character.ownerOf(characterId) == tx.origin, "characterId !owner");
         //todo: 此处需要随机获取装备名称、稀有度等信息，然后进行保存；
         uint256 tokenId = _mintEquipment(recipient, position, "", 0, 0, 1);
@@ -234,7 +249,6 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         }
     }
 
-    // 使用归属关系的变化，来确定tokenId是否存在
     function putOnOne(uint256 characterId, uint256[] memory characterAttrs, uint256 tokenId) internal {
         uint256[] memory attrIds = new uint256[](8);
         (

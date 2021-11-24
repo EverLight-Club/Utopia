@@ -15,6 +15,14 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
     
     using Strings for uint256;
 
+    struct AttrMetadataExtend {
+        string name;    
+        string symbol;
+        bool exist;
+        uint256 balance;
+        bytes text;
+    }
+
     uint256[4][3] public INIT_ATTR = [[100, 100, 100, 100], 
                                       [100, 100, 100, 100], 
                                       [100, 100, 100, 100]];
@@ -149,6 +157,33 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         return output;
     }
 
+    // @dev 查询地址的角色ID列表
+    function queryCharacterByAddress(address addr, uint256 startIndex) external view returns(uint256[] memory characterIdList, uint256 lastIndex) {
+        uint256 count = ERC721Upgradeable.balanceOf(addr);
+        characterIdList = new uint256[](10);    // default returns 20 records.
+        uint256 index = 1;
+        for(uint256 i = startIndex; i < count; i++) {
+            if(index >= characterIdList.length){
+                index = i;
+                break;
+            }
+            characterIdList[i] = tokenOfOwnerByIndex(addr, i);
+            index++;
+        }
+        return (characterIdList, index);
+    }
+
+    // @dev 查询角色的所有属性
+    function queryCharacterAttrs(uint256 tokenId) external view returns(AttrMetadataExtend[] memory metadata) {
+        require(_exists(tokenId), "Token not exist");
+        uint256[] memory attrIds = _getInitAttributeAttrIds();
+        AttrMetadataExtend[] memory result = new AttrMetadataExtend[](attrIds.length);
+        for(uint256 i = 0; i < attrIds.length; i++){
+            result[i] = AttrMetadataExtend(name(attrIds[i]), symbol(attrIds[i]), true, balanceOf(tokenId, attrIds[i]), textOf(tokenId, attrIds[i]));
+        }
+        return result;
+    }
+
     function getCharacterId(string memory name) public view returns (uint256) {
         return _characterName[name];
     }
@@ -279,7 +314,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         return attrIds;
     }
 
-    function _getInitAttributeAmounts(uint256 occupation, ESEX sex) internal view returns(uint256[] memory) {
+    function _getInitAttributeAmounts(uint256 occupation, ESEX sex) internal pure returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](12);
         {
             (
