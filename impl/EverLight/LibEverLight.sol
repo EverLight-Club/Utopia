@@ -3,6 +3,25 @@ pragma solidity ^0.8.0;
 
 library LibEverLight {
 
+  struct AttrMetadataExtend {
+        string name;    
+        string symbol;
+        bool exist;
+        uint256 balance;
+        bytes text;
+  }
+
+  struct EquipmentExtend {
+      uint256 tokenId;
+      uint256 position;
+      uint256 attrId;
+      string name;
+      string symbol;
+      bool exist;
+      uint256 balance;
+      bytes text;
+  }
+
   struct Configurations {
     uint256 _baseFee;                           // base fee for create character
     uint32 _incrPerNum;                         // the block number for increase fee

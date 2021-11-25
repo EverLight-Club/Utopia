@@ -15,14 +15,6 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
     
     using Strings for uint256;
 
-    struct AttrMetadataExtend {
-        string name;    
-        string symbol;
-        bool exist;
-        uint256 balance;
-        bytes text;
-    }
-
     uint256[4][3] public INIT_ATTR = [[100, 100, 100, 100], 
                                       [100, 100, 100, 100], 
                                       [100, 100, 100, 100]];
@@ -174,14 +166,16 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
     }
 
     // @dev 查询角色的所有属性
-    function queryCharacterAttrs(uint256 tokenId) external view returns(AttrMetadataExtend[] memory metadata) {
+    function queryCharacterAttrs(uint256 tokenId) external view returns(uint256[] memory balances, bytes[] memory texts) {
         require(_exists(tokenId), "Token not exist");
         uint256[] memory attrIds = _getInitAttributeAttrIds();
-        AttrMetadataExtend[] memory result = new AttrMetadataExtend[](attrIds.length);
+        balances = new uint256[](attrIds.length);
+        texts = new bytes[](attrIds.length);
         for(uint256 i = 0; i < attrIds.length; i++){
-            result[i] = AttrMetadataExtend(name(attrIds[i]), symbol(attrIds[i]), true, balanceOf(tokenId, attrIds[i]), textOf(tokenId, attrIds[i]));
+            balances[i] = balanceOf(tokenId, attrIds[i]);
+            texts[i] =  textOf(tokenId, attrIds[i]);
         }
-        return result;
+        return (balances, texts);
     }
 
     function getCharacterId(string memory name) public view returns (uint256) {

@@ -12,25 +12,6 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
 
     uint256 public _totalToken;
 
-    struct AttrMetadataExtend {
-        string name;    
-        string symbol;
-        bool exist;
-        uint256 balance;
-        bytes text;
-    }
-
-    struct EquipmentExtend {
-        uint256 tokenId;
-        uint256 position;
-        uint256 attrId;
-        string name;
-        string symbol;
-        bool exist;
-        uint256 balance;
-        bytes text;
-    }
-
     constructor() {
         initialize();
     }
@@ -94,28 +75,27 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         _initAttribute(tokenId, position, name, suitId, rarity, level);
     }
 
-    function queryEquipmentAttrs(uint256 tokenId) external view returns(AttrMetadataExtend[] memory){
+    function queryEquipmentAttrs(uint256 tokenId) external view returns(uint256[] memory balances, bytes[] memory texts){
         uint256[] memory attrIds = _getInitAttributeAttrIds();
-        AttrMetadataExtend[] memory result = new AttrMetadataExtend[](attrIds.length);
+        balances = new uint256[](attrIds.length);
+        texts = new bytes[](attrIds.length);
         for(uint256 i = 0; i < attrIds.length; i++){
-            result[i] = AttrMetadataExtend(name(attrIds[i]), symbol(attrIds[i]), true, balanceOf(tokenId, attrIds[i]), textOf(tokenId, attrIds[i]));
+            balances[i] = balanceOf(tokenId, attrIds[i]);
+            texts[i] =  textOf(tokenId, attrIds[i]);
         }
-        return result;
+        return (balances, texts);
     }
 
-    function queryEquipmentByCharacterId(uint256[] memory tokenIds) external view returns(EquipmentExtend[] memory equipment){
+    function queryEquipmentByBatch(uint256[] memory tokenIds) external view returns(uint256[21][] memory equipments){
         uint256[] memory attrIds = _getInitAttributeAttrIds();
-        uint256 len = attrIds.length * tokenIds.length;
-        equipment = new EquipmentExtend[](len);
-        uint256 index = 0;
+        //uint256 len = attrIds.length;
+        equipments = new uint256[21][](tokenIds.length);
         for(uint256 i = 0; i < tokenIds.length; i++) {
             for(uint256 n = 0; n < attrIds.length; n++){
-                equipment[index] = EquipmentExtend(tokenIds[i], balanceOf(tokenIds[i], uint256(EQUIPMENTATTR.EQUIPMENT_POSITION)), 
-                                                    attrIds[n], name(attrIds[n]), symbol(attrIds[n]), true, balanceOf(tokenIds[i], attrIds[n]), textOf(tokenIds[i], attrIds[n]));
-                index++;
+                equipments[i][n] = balanceOf(tokenIds[i], attrIds[n]);
             }
         }
-        return equipment;
+        return equipments;
     }
 
     function getExtendAttr(uint256 tokenId, string memory key) external view returns (string memory) {

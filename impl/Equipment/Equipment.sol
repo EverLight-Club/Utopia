@@ -138,7 +138,8 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         //IERC721Upgradeable character = IERC721Upgradeable(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
         //require(character.ownerOf(characterId) == tx.origin, "characterId !owner");
         //todo: 此处需要随机获取装备名称、稀有度等信息，然后进行保存；
-        uint256 tokenId = _mintEquipment(recipient, position, "", 0, 0, 1);
+        (uint32 suitId, uint8 rare, string memory suitName) = _randomEquipmentAttr(position);
+        uint256 tokenId = _mintEquipment(recipient, position, suitName, uint256(suitId), uint256(rare), 1);
         _characterEquipments[characterId].push(tokenId);
         _equipmentCharacters[tokenId] = characterId;
         emit NewEquipment(recipient, characterId, tokenId);
@@ -163,6 +164,30 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     // @dev 随机创建装备，为指定角色创建指定位置的装备
     function mintRandomEquipment(address recipient, uint8 position) external onlyDirectory {
         // create random number and plus lucky number on msg.sender
+        // IEverLight everLight = IEverLight(getAddress(uint32(CONTRACT_TYPE.EVER_LIGHT)));
+        // uint256 luckNum = _getRandom(uint256(position).toString()) % everLight.queryPartsCount(position);
+
+        // // find the parts on position by lucky number
+        // for(uint8 rare = 0; rare < 256; ++rare) {
+        //     if (luckNum >= everLight.queryPartsTypeCount(position, rare)) {
+        //         luckNum -= everLight.queryPartsTypeCount(position, rare);
+        //         continue;
+        //     }
+
+        //     // calc rand power by base power and +10%
+        //     //uint32 randPower = uint32(everLight.queryPower(position, rare) <= 10 ?
+        //     //                        _getRandom(uint256(256).toString()) % 1 :
+        //     //                        _getRandom(uint256(256).toString()) % (everLight.queryPower(position, rare) / 10));
+        //     (uint32 suitId, string memory suitName) = everLight.queryPartsType(position, rare, luckNum);
+        //     _mintEquipment(recipient, position, suitName, suitId, rare, 1);
+        //     break;
+        // }
+
+        (uint32 suitId, uint8 rare, string memory suitName) = _randomEquipmentAttr(position);
+        _mintEquipment(recipient, position, suitName, suitId, rare, 1);
+    }
+
+    function _randomEquipmentAttr(uint8 position) internal returns(uint32 _suitId, uint8 _rare, string memory _suitName){
         IEverLight everLight = IEverLight(getAddress(uint32(CONTRACT_TYPE.EVER_LIGHT)));
         uint256 luckNum = _getRandom(uint256(position).toString()) % everLight.queryPartsCount(position);
 
@@ -178,13 +203,8 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
             //                        _getRandom(uint256(256).toString()) % 1 :
             //                        _getRandom(uint256(256).toString()) % (everLight.queryPower(position, rare) / 10));
             (uint32 suitId, string memory suitName) = everLight.queryPartsType(position, rare, luckNum);
-            _mintEquipment(recipient, position, suitName, suitId, rare, 1);
-            break;
+            return (suitId, rare, suitName);
         }
-
-        // clear lucky value on msg.sender, only used once
-        // todo: 此处还未使用角色上的幸运值，考虑是否加上
-        //_accountList[tx.origin]._luckyNum = 0;
     }
 
     // @dev 销毁指定ID的装备
@@ -342,7 +362,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
 
         //todo: 此处的算力值还未进行有效的赋值，需要进行处理
         basePower = uint32(basePower * (125 ** (firstAttrAmount[3] - 1)) / (100 ** (firstAttrAmount[3] - 1)));
-        uint32 randPower = uint32(basePower < 10 ? _getRandom(uint256(256).toString()) % 1 : _getRandom(uint256(256).toString()) % (basePower / 10));
+        //uint32 randPower = uint32(basePower < 10 ? _getRandom(uint256(256).toString()) % 1 : _getRandom(uint256(256).toString()) % (basePower / 10));
 
         // 装备合成，原有装备销毁，生成新的装备
         bytes memory name = equipment3664.textOf(firstTokenId, uint256(EQUIPMENTATTR.EQUIPMENT_NAME));
