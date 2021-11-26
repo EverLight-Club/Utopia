@@ -7,7 +7,7 @@ import "../../token/ERC721/IERC721Upgradeable.sol";
 import "../../token/ERC721/IERC721ReceiverUpgradeable.sol";
 import "../Directory/DirectoryBridge.sol";
 import "../../interfaces/IEquipment.sol";
-import "../../interfaces/ICharacter.sol";
+import "./ICharacter.sol";
 import "../../interfaces/IEverLight.sol";
 import "../../library/Genesis.sol";
 import "../../utils/Strings.sol";

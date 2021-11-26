@@ -196,7 +196,7 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
 
     function increaseAttr(uint256 tokenId, uint256 attrId, uint256 value) external onlyDirectory {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
-        character3664.attach(tokenId, attrId, value, "", false);
+        character3664.attach(tokenId, attrId, value, bytes(""), false);
         if (attrId == uint256(CHARACTERATTR.CHARACTER_EXPERIENCE)) {
             _upLevel(tokenId);
         }
