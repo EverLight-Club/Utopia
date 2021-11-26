@@ -153,29 +153,33 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
     function queryCharacterByAddress(address addr, uint256 startIndex) external view returns(uint256[] memory characterIdList, uint256 lastIndex) {
         uint256 count = ERC721Upgradeable.balanceOf(addr);
         characterIdList = new uint256[](10);    // default returns 20 records.
-        uint256 index = 1;
+        uint256 index = 0;
+        lastIndex = startIndex;
         for(uint256 i = startIndex; i < count; i++) {
             if(index >= characterIdList.length){
-                index = i;
+                lastIndex = i;
                 break;
             }
-            characterIdList[i] = tokenOfOwnerByIndex(addr, i);
+            characterIdList[index] = tokenOfOwnerByIndex(addr, i);
+            if(characterIdList[index] != 0){
+                lastIndex = i;
+            }
             index++;
         }
-        return (characterIdList, index);
+        return (characterIdList, lastIndex);
     }
 
     // @dev 查询角色的所有属性
-    function queryCharacterAttrs(uint256 tokenId) external view returns(uint256[] memory balances, bytes[] memory texts) {
+    function queryCharacterAttrs(uint256 tokenId) external view returns(uint256[] memory balances) {
         require(_exists(tokenId), "Token not exist");
         uint256[] memory attrIds = _getInitAttributeAttrIds();
         balances = new uint256[](attrIds.length);
-        texts = new bytes[](attrIds.length);
+        //texts = new string[](attrIds.length);
         for(uint256 i = 0; i < attrIds.length; i++){
             balances[i] = balanceOf(tokenId, attrIds[i]);
-            texts[i] =  textOf(tokenId, attrIds[i]);
+            //texts[i] =  string(textOf(tokenId, attrIds[i]));
         }
-        return (balances, texts);
+        //return (balances, texts);
     }
 
     function getCharacterId(string memory name) public view returns (uint256) {

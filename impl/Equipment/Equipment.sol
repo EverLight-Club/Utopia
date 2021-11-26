@@ -124,8 +124,8 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
 
     // @dev 批量创建装备（对于新角色，进行初始化创建时调用该接口）
     function mintBatchEquipment(address recipient, uint256 characterId, uint8 maxPosition) external payable onlyDirectory {
-        for(uint256 i = 0; i < maxPosition; i++) {
-            _mintEquipmentWithCharacter(recipient, characterId, uint8(i));
+        for(uint8 i = 0; i < maxPosition; i++) {
+            _mintEquipmentWithCharacter(recipient, characterId, i);
         }
     }
 
@@ -189,7 +189,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
 
     function _randomEquipmentAttr(uint8 position) internal returns(uint32 _suitId, uint8 _rare, string memory _suitName){
         IEverLight everLight = IEverLight(getAddress(uint32(CONTRACT_TYPE.EVER_LIGHT)));
-        uint256 luckNum = _getRandom(uint256(position).toString()) % everLight.queryPartsCount(position);
+        uint256 luckNum = _getRandom(uint256(position).toString()) % uint256(everLight.queryPartsCount(position));
 
         // find the parts on position by lucky number
         for(uint8 rare = 0; rare < 256; ++rare) {

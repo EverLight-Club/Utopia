@@ -75,15 +75,15 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         _initAttribute(tokenId, position, name, suitId, rarity, level);
     }
 
-    function queryEquipmentAttrs(uint256 tokenId) external view returns(uint256[] memory balances, bytes[] memory texts){
+    function queryEquipmentAttrs(uint256 tokenId) external view returns(uint256[] memory balances){
         uint256[] memory attrIds = _getInitAttributeAttrIds();
         balances = new uint256[](attrIds.length);
-        texts = new bytes[](attrIds.length);
+        //texts = new string[](attrIds.length);
         for(uint256 i = 0; i < attrIds.length; i++){
             balances[i] = balanceOf(tokenId, attrIds[i]);
-            texts[i] =  textOf(tokenId, attrIds[i]);
+            //texts[i] =  string(textOf(tokenId, attrIds[i]));
         }
-        return (balances, texts);
+        //return (balances, texts);
     }
 
     function queryEquipmentByBatch(uint256[] memory tokenIds) external view returns(uint256[21][] memory equipments){
