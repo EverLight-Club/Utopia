@@ -45,16 +45,20 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     function queryEquipmentByAddress(address addr, uint256 startIndex) external view returns(uint256[] memory equipmentIdList, uint256 lastIndex){
         uint256 count = ERC721Upgradeable.balanceOf(addr);
         equipmentIdList = new uint256[](10);    // default returns 20 records.
-        uint256 index = 1;
+        uint256 index = 0;
+        lastIndex = startIndex;
         for(uint256 i = startIndex; i < count; i++) {
             if(index >= equipmentIdList.length){
-                index = i;
+                lastIndex = i;
                 break;
             }
-            equipmentIdList[i] = tokenOfOwnerByIndex(addr, i);
+            equipmentIdList[index] = tokenOfOwnerByIndex(addr, i);
+            if(equipmentIdList[index] != 0){
+                lastIndex = i;
+            }
             index++;
         }
-        return (equipmentIdList, index);
+        return (equipmentIdList, lastIndex);
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory output) {
