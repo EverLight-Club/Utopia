@@ -14,10 +14,6 @@ import "../../utils/Strings.sol";
 contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeable, DirectoryBridge, ReentrancyGuard {
     
     using Strings for uint256;
-
-    uint256[4][3] public INIT_ATTR = [[100, 100, 100, 100], 
-                                      [100, 100, 100, 100], 
-                                      [100, 100, 100, 100]];
     
     mapping(string => uint256) _characterName;
     mapping(uint256 => mapping(string => string)) _extendAttr;
@@ -233,25 +229,39 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         require(msg.value >= Genesis.WASH_POINTS_PRICE, "Payed too low value");
         Address.sendValue(Genesis.TREASURY, msg.value);
 
-        /*uint256[] memory attrIds = [uint256(CHARACTERATTR.CHARACTER_OCCUPATION), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
-                                    uint256(CHARACTERATTR.CHARACTER_POINTS), uint256(CHARACTERATTR.CHARACTER_STRENGTH), 
-                                    uint256(CHARACTERATTR.CHARACTER_DEXTERITY), uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), 
-                                    uint256(CHARACTERATTR.CHARACTER_CONSTITUTION)];
-        bytes[] memory texts = ["", "", "", "", "", "", ""];
+        uint256[] memory attrIds = new uint256[](7);
+        {
 
-        uint256[] memory currValue = balanceOfBatch(tokenId, attrIds);*/
-        //uint256[] memory attrIds = new uint256[](4);
-        //bytes[] memory texts = new bytes[](4);
+            (attrIds[0],attrIds[1],attrIds[2]) 
+            = 
+            ( 
+                uint256(CHARACTERATTR.CHARACTER_OCCUPATION),                                    
+                uint256(CHARACTERATTR.CHARACTER_LEVEL), 
+                uint256(CHARACTERATTR.CHARACTER_POINTS)                                   
+            );
+        }
+        {
 
-        //uint256[] memory currValue = balanceOfBatch(tokenId, attrIds);
-        //_burnBatch(tokenId, attrIds, currValue);
+            (attrIds[3],attrIds[4],attrIds[5],attrIds[6]) 
+            = 
+            ( 
+                uint256(CHARACTERATTR.CHARACTER_STRENGTH), 
+                uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
+                uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), 
+                uint256(CHARACTERATTR.CHARACTER_CONSTITUTION)                                  
+            );
+        }
+        bytes[] memory texts = new bytes[](7);
 
-        /*currValue[2] = (currValue[1] - 1) * 5;
-        currValue[3] = INIT_ATTR[ currValue[0] ][0];
-        currValue[4] = INIT_ATTR[ currValue[0] ][1];
-        currValue[5] = INIT_ATTR[ currValue[0] ][2];
-        currValue[6] = INIT_ATTR[ currValue[0] ][3];
-        _batchAttach(tokenId, attrIds, currValue, texts);*/
+        uint256[] memory currValue = balanceOfBatch(tokenId, attrIds);
+        _burnBatch(tokenId, attrIds, currValue);
+
+        currValue[2] = (currValue[1] - 1) * 5;  // CHARACTER_POINTS
+        currValue[3] = 100;         // CHARACTER_STRENGTH
+        currValue[4] = 100;         // CHARACTER_DEXTERITY
+        currValue[5] = 100;         // CHARACTER_INTELLIGENCE
+        currValue[6] = 100;         // CHARACTER_CONSTITUTION
+        _batchAttach(tokenId, attrIds, currValue, texts);
     }
 
     function _initAttribute(uint256 tokenId, string memory name, uint256 occupation, ESEX sex) internal {

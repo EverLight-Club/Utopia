@@ -47,7 +47,7 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     _config._incrFee = 0.001 * 10 ** 18; 
     _config._decrBlockNum = 25000;       
     _config._decrFee = 0.001 * 10 ** 18;
-    _config._maxPosition = 3;
+    _config._maxPosition = 2;
     _config._luckyStonePrice = 2000;    
   }
 
