@@ -131,8 +131,6 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
 
     // attrIds len: 21
     function pluck(uint256 tokenId, uint256 attrId, bool isText) internal view returns (string memory output) {
-        // 固定位置：不同属性可能对应中文或者值，进行区分
-        // symbol: balance/text
         string memory symbol = symbol(attrId);
         uint256 balance = balanceOf(tokenId, attrId);
         bytes memory text = textOf(tokenId, attrId);
@@ -169,17 +167,13 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         return (characterIdList, lastIndex);
     }
 
-    // @dev 查询角色的所有属性
     function queryCharacterAttrs(uint256 tokenId) external view returns(uint256[] memory balances) {
         require(_exists(tokenId), "Token not exist");
         uint256[] memory attrIds = _getInitAttributeAttrIds();
         balances = new uint256[](attrIds.length);
-        //texts = new string[](attrIds.length);
         for(uint256 i = 0; i < attrIds.length; i++){
             balances[i] = balanceOf(tokenId, attrIds[i]);
-            //texts[i] =  string(textOf(tokenId, attrIds[i]));
         }
-        //return (balances, texts);
     }
 
     function getCharacterId(string memory name) public view returns (uint256) {
@@ -219,12 +213,11 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         _extendAttr[tokenId][key] = value;
     }
 
-    // 思考：考虑使用的场景
     function assignPoints(uint256 tokenId, uint32 strength, uint32 DEXTERITY, uint32 intelligence, uint32 CONSTITUTION) external {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
 
         uint256 totalPoints = uint256(strength) + uint256(DEXTERITY) + uint256(intelligence) + uint256(CONSTITUTION);
-        uint256 currPoints = balanceOf(tokenId, totalPoints);
+        uint256 currPoints = balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS));
         require(totalPoints <= currPoints, "Not enough points");
 
         _burn(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS), totalPoints);
