@@ -3,30 +3,28 @@
 pragma solidity ^0.8.0;
 
 import "../../token/ERC721/ERC721EnumerableUpgradeable.sol";
-import "../../token/ERC3664Stand/ERC3664Upgradeable.sol";
 import "../Directory/DirectoryBridge.sol";
 import "../../utils/ReentrancyGuard.sol";
 import "../../interfaces/ICharacter.sol";
 import "../../library/Genesis.sol";
 import "../../utils/Base64.sol";
 import "../../utils/Strings.sol";
+import "../../proxy/Ownable.sol";
+import "./Character3664.sol";
 
-contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeable, DirectoryBridge, ReentrancyGuard {
+contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgradeable, IERC721ReceiverUpgradeable, ReentrancyGuard {
     
     using Strings for uint256;
     
     mapping(string => uint256) _characterName;
     mapping(uint256 => mapping(string => string)) _extendAttr;
     
+    Character3664 public character3664;
+
     function initialize() public initializer {
-        //__ERC3664_init();
         __ERC721Enumerable_init("Utopia Character Token", "UCT");
         __DirectoryBridge_init();
         __Character_init_unchained();
-    }
-
-    function CharacterInit(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyOwner {
-        _mintBatch(attrIds, names, symbols, uris);
     }
 
     function __Character_init_unchained() internal initializer {
@@ -47,6 +45,11 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         //_mintBatch(attrIds, names, symbols, uris);
     }
 
+    function setCharacter3664(address _character3664) external onlyOwner {
+        require(_character3664 != address(0), "address is nil address");
+        character3664 = Character3664(_character3664);
+    }
+
     function mintCharacter(address recipient, address recommender, uint256 tokenId, string memory name, uint256 occupation) external payable onlyDirectory {
         require(recipient != address(0), "recipient invalid");
         require(!_exists(tokenId), "tokenId already exists");
@@ -55,7 +58,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         _characterName[name] = tokenId;
         _safeMint(recipient, tokenId);
         
-        _initAttribute(tokenId, name, occupation, ESEX.Neutral);
+        character3664.initAttributeForCharacter(tokenId, name, occupation, uint256(ESEX.Neutral));
         emit NewCharacter(recipient, recommender, tokenId);
     }
 
@@ -63,22 +66,22 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         require(_exists(tokenId), "Character: invalid characterId");
         require(lucklyPoint != 0, "Character: lucklyPoint is zero");
         require(_isApprovedOrOwner(tx.origin, tokenId), "Not owner or approver");
-        _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK), lucklyPoint, "", false);
+        character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK), lucklyPoint, "", false);
     }
 
     function burnLucklyPoint(uint256 tokenId, uint256 lucklyPoint) external onlyDirectory {
         require(_exists(tokenId), "Character: invalid characterId");
         require(lucklyPoint != 0, "Character: lucklyPoint is zero");
         require(_isApprovedOrOwner(tx.origin, tokenId), "Not owner or approver");
-        _burn(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK), lucklyPoint);
+        character3664.burn(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK), lucklyPoint);
     }
 
     function getLucklyPoint(uint256 tokenId) public view returns (uint256) {
         require(_exists(tokenId), "Character: tokenId not exists");
-        return balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
+        return character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
     }
 
-    function isApprovedOrOwner(address spender, uint256 tokenId) public view override returns (bool) {
+    function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }
 
@@ -127,9 +130,9 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
 
     // attrIds len: 21
     function pluck(uint256 tokenId, uint256 attrId, bool isText) internal view returns (string memory output) {
-        string memory symbol = symbol(attrId);
-        uint256 balance = balanceOf(tokenId, attrId);
-        bytes memory text = textOf(tokenId, attrId);
+        string memory symbol = character3664.symbol(attrId);
+        uint256 balance = character3664.balanceOf(tokenId, attrId);
+        bytes memory text = character3664.textOf(tokenId, attrId);
 
         if(isText){
             output = string(abi.encodePacked(symbol, ":", string(text)));
@@ -163,28 +166,28 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         return (characterIdList, lastIndex);
     }
 
-    function queryCharacterAttrs(uint256 tokenId) external view returns(uint256[] memory balances) {
+    /*function queryCharacterAttrs(uint256 tokenId) external view returns(uint256[] memory balances) {
         require(_exists(tokenId), "Token not exist");
         uint256[] memory attrIds = _getInitAttributeAttrIds();
         balances = new uint256[](attrIds.length);
         for(uint256 i = 0; i < attrIds.length; i++){
             balances[i] = balanceOf(tokenId, attrIds[i]);
         }
-    }
+    }*/
 
     function getCharacterId(string memory name) public view returns (uint256) {
         return _characterName[name];
     }
 
-    function getAttr(uint256 tokenId, uint256 attrId) public view returns (uint256, string memory) {
+    /*function getAttr(uint256 tokenId, uint256 attrId) public view returns (uint256, string memory) {
         require(_exists(tokenId), "Token not exist");
         return (balanceOf(tokenId, attrId), string(textOf(tokenId, attrId)));
-    }
+    }*/
 
-    function getBatchAttr(uint256 tokenId, uint256[] calldata attrIds) external view override returns (uint256[] memory) {
+    /*function getBatchAttr(uint256 tokenId, uint256[] calldata attrIds) external view override returns (uint256[] memory) {
         require(_exists(tokenId), "Token not exist");
         return balanceOfBatch(tokenId, attrIds);
-    }
+    }*/
 
     function getExtendAttr(uint256 tokenId, string memory key) external view returns (string memory) {
         require(_exists(tokenId), "Token not exist");
@@ -193,7 +196,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
 
     function increaseAttr(uint256 tokenId, uint256 attrId, uint256 value) external onlyDirectory {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
-        _attach(tokenId, attrId, value, "", false);
+        character3664.attach(tokenId, attrId, value, "", false);
         if (attrId == uint256(CHARACTERATTR.CHARACTER_EXPERIENCE)) {
             _upLevel(tokenId);
         }
@@ -201,7 +204,7 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
 
     function decreaseAttr(uint256 tokenId, uint256 attrId, uint256 value) external onlyDirectory {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
-        _burn(tokenId, attrId, value);
+        character3664.burn(tokenId, attrId, value);
     }
 
     function setExtendAttr(uint256 tokenId, string memory key, string memory value) external {
@@ -213,14 +216,14 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
 
         uint256 totalPoints = uint256(strength) + uint256(DEXTERITY) + uint256(intelligence) + uint256(CONSTITUTION);
-        uint256 currPoints = balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS));
+        uint256 currPoints = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS));
         require(totalPoints <= currPoints, "Not enough points");
 
-        _burn(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS), totalPoints);
-        _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_STRENGTH), strength, "", false);
-        _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_DEXTERITY), DEXTERITY, "", false);
-        _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), intelligence, "", false);
-        _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), CONSTITUTION, "", false);
+        character3664.burn(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS), totalPoints);
+        character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_STRENGTH), strength, "", false);
+        character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_DEXTERITY), DEXTERITY, "", false);
+        character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), intelligence, "", false);
+        character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), CONSTITUTION, "", false);
     }
 
     // 考虑：需要核对场景
@@ -253,131 +256,140 @@ contract Character is ICharacter, ERC3664Upgradeable, ERC721EnumerableUpgradeabl
         }
         bytes[] memory texts = new bytes[](7);
 
-        uint256[] memory currValue = balanceOfBatch(tokenId, attrIds);
-        _burnBatch(tokenId, attrIds, currValue);
+        uint256[] memory currValue = character3664.balanceOfBatch(tokenId, attrIds);
+        character3664.burnBatch(tokenId, attrIds, currValue);
 
         currValue[2] = (currValue[1] - 1) * 5;  // CHARACTER_POINTS
         currValue[3] = 100;         // CHARACTER_STRENGTH
         currValue[4] = 100;         // CHARACTER_DEXTERITY
         currValue[5] = 100;         // CHARACTER_INTELLIGENCE
         currValue[6] = 100;         // CHARACTER_CONSTITUTION
-        _batchAttach(tokenId, attrIds, currValue, texts);
+        character3664.batchAttach(tokenId, attrIds, currValue, texts);
     }
 
-    function _initAttribute(uint256 tokenId, string memory name, uint256 occupation, ESEX sex) internal {
-       /* uint256[] memory attrIds = [uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
-                                    uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
-                                    uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), uint256(CHARACTERATTR.CHARACTER_POINTS), 
-                                    uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
-                                    uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), 
-                                    uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)];
+    // function _initAttribute(uint256 tokenId, string memory name, uint256 occupation, ESEX sex) internal {
+    //     uint256[] memory attrIds = [uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
+    //                                 uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
+    //                                 uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), uint256(CHARACTERATTR.CHARACTER_POINTS), 
+    //                                 uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
+    //                                 uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), 
+    //                                 uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)];
         
-        uint256[] memory amounts = [1, uint256(occupation), uint256(sex), 1, 0, 0, INIT_ATTR[uint256(occupation)][0], INIT_ATTR[occupation][1], INIT_ATTR[occupation][2], INIT_ATTR[occupation][3], 0, 0];
+    //     uint256[] memory amounts = [1, uint256(occupation), uint256(sex), 1, 0, 0, INIT_ATTR[uint256(occupation)][0], INIT_ATTR[occupation][1], INIT_ATTR[occupation][2], INIT_ATTR[occupation][3], 0, 0];
         
-        bytes[] memory texts = [bytes(name), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes("")];
-        */
-        //uint256[] memory attrIds = new uint256[](12);
-        //uint256[] memory amounts = new uint256[](12);
-        //bytes[] memory texts = new bytes[](12);
-        _batchAttach(tokenId, _getInitAttributeAttrIds(), _getInitAttributeAmounts(occupation, sex), _getInitAttributeTexts(name));
-    }
+    //     bytes[] memory texts = [bytes(name), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes("")];
+        
+    //     //uint256[] memory attrIds = new uint256[](12);
+    //     //uint256[] memory amounts = new uint256[](12);
+    //     //bytes[] memory texts = new bytes[](12);
+    //     _batchAttach(tokenId, _getInitAttributeAttrIds(), _getInitAttributeAmounts(occupation, sex), _getInitAttributeTexts(name));
+    // }
 
-    function _getInitAttributeAttrIds() internal pure returns(uint256[] memory) {
-        uint256[] memory attrIds = new uint256[](12);
-        {
-            (
-                attrIds[0], attrIds[1], attrIds[2], attrIds[3], attrIds[4]
-            ) = 
-            (
-                uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
-                uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
-                uint256(CHARACTERATTR.CHARACTER_EXPERIENCE)
-            );
-        }
-        {
-            (
-                attrIds[5], attrIds[6], attrIds[7], attrIds[8], attrIds[9]
-            ) = 
-            (
-                uint256(CHARACTERATTR.CHARACTER_POINTS), 
-                uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
-                uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION)
-            );
-        }
-        {
-            (
-                attrIds[10], attrIds[11]
-            ) = 
-            (
-                uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)
-            );
-        }
-        return attrIds;
-    }
+    // function _getInitAttributeAttrIds() internal pure returns(uint256[] memory) {
+    //     uint256[] memory attrIds = new uint256[](12);
+    //     {
+    //         (
+    //             attrIds[0], attrIds[1], attrIds[2], attrIds[3], attrIds[4]
+    //         ) = 
+    //         (
+    //             uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
+    //             uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
+    //             uint256(CHARACTERATTR.CHARACTER_EXPERIENCE)
+    //         );
+    //     }
+    //     {
+    //         (
+    //             attrIds[5], attrIds[6], attrIds[7], attrIds[8], attrIds[9]
+    //         ) = 
+    //         (
+    //             uint256(CHARACTERATTR.CHARACTER_POINTS), 
+    //             uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
+    //             uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION)
+    //         );
+    //     }
+    //     {
+    //         (
+    //             attrIds[10], attrIds[11]
+    //         ) = 
+    //         (
+    //             uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)
+    //         );
+    //     }
+    //     return attrIds;
+    // }
 
-    function _getInitAttributeAmounts(uint256 occupation, ESEX sex) internal pure returns(uint256[] memory) {
-        uint256[] memory amounts = new uint256[](12);
-        {
-            (
-                amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]
-            ) = 
-            (
-                1, uint256(occupation), uint256(sex), 1, 0
-            );
-        }
-        {
-            (
-                amounts[5], amounts[6], amounts[7], amounts[8], amounts[9]
-            ) = 
-            (
-                0, 100, 100, 100, 100
-            );
-        }
-        {(
-            amounts[10],amounts[11]
-        ) = 
-        (
-            0, 0
-        );}
-        return amounts;
-    }
+    // function _getInitAttributeAmounts(uint256 occupation, ESEX sex) internal pure returns(uint256[] memory) {
+    //     uint256[] memory amounts = new uint256[](12);
+    //     {
+    //         (
+    //             amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]
+    //         ) = 
+    //         (
+    //             1, uint256(occupation), uint256(sex), 1, 0
+    //         );
+    //     }
+    //     {
+    //         (
+    //             amounts[5], amounts[6], amounts[7], amounts[8], amounts[9]
+    //         ) = 
+    //         (
+    //             0, 100, 100, 100, 100
+    //         );
+    //     }
+    //     {(
+    //         amounts[10],amounts[11]
+    //     ) = 
+    //     (
+    //         0, 0
+    //     );}
+    //     return amounts;
+    // }
 
-    function _getInitAttributeTexts(string memory name) pure internal returns(bytes[] memory) {
-        bytes[] memory texts = new bytes[](12);
-        {(
-            texts[0], texts[1], texts[2], texts[3], texts[4]
-        ) = 
-        (
-            bytes(name), bytes(""), bytes(""), bytes(""), bytes("")
-        );}
-        {(
-            texts[5], texts[6], texts[7], texts[8], texts[9]
-        ) = 
-        (
-            bytes(""), bytes(""), bytes(""), bytes(""), bytes("")
-        );}
-        {(
-            texts[10],texts[11]
-        ) = 
-        (
-            bytes(""), bytes("")
-        );}
-        return texts;
-    }
+    // function _getInitAttributeTexts(string memory name) pure internal returns(bytes[] memory) {
+    //     bytes[] memory texts = new bytes[](12);
+    //     {(
+    //         texts[0], texts[1], texts[2], texts[3], texts[4]
+    //     ) = 
+    //     (
+    //         bytes(name), bytes(""), bytes(""), bytes(""), bytes("")
+    //     );}
+    //     {(
+    //         texts[5], texts[6], texts[7], texts[8], texts[9]
+    //     ) = 
+    //     (
+    //         bytes(""), bytes(""), bytes(""), bytes(""), bytes("")
+    //     );}
+    //     {(
+    //         texts[10],texts[11]
+    //     ) = 
+    //     (
+    //         bytes(""), bytes("")
+    //     );}
+    //     return texts;
+    // }
     
     function _upLevel(uint256 tokenId) internal {
         while (true) {
-            uint256 currExperience = balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_EXPERIENCE));
-            uint256 currLevel = balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LEVEL));
+            uint256 currExperience = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_EXPERIENCE));
+            uint256 currLevel = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LEVEL));
             uint256 upgradeExperience = 30 * currLevel ** 2 + 150 * currLevel - 80;
 
             if (currExperience < upgradeExperience) {
                 break;
             }
 
-            _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_LEVEL), 1, "", false);
-            _attach(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS), 5, "", false);
-            _burn(tokenId, uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), upgradeExperience);
+            character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_LEVEL), 1, "", false);
+            character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS), 5, "", false);
+            character3664.burn(tokenId, uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), upgradeExperience);
         }
+    }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external override returns (bytes4) {
+        return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }
 }

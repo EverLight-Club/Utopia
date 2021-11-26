@@ -67,7 +67,7 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         _attach(tokenId, attrId, amount, text, isPrimary);
     }
 
-    function mintBatch(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyOwner {
+    function mintBatch(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyDirectory {
         _mintBatch(attrIds, names, symbols, uris);
     }
 
