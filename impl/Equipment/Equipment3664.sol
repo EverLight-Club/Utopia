@@ -181,7 +181,7 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
                 amounts[15],amounts[16],amounts[17],amounts[18],amounts[19],amounts[20]  
             )  = 
             (
-                0, 0, 0, 0, 0, 0
+                0, 0, 0, 100, 100, 100
             );
         }
         return amounts;

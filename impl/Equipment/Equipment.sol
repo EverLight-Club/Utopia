@@ -222,6 +222,18 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         _suitFlag[suitId] = _owner;
     }
 
+    function getEquipmentFeature(uint256 characterId) public view returns (uint256 _atk, uint256 _def, uint256 _dps) {
+        if(_characterEquipments[characterId].length == 0){
+            return (0, 0, 0);
+        }
+        uint256[] memory equipmentList = _characterEquipments[characterId];
+        for(uint256 i = 0; i < equipmentList.length; i++){
+            _dps = _dps + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.SPEED_BONUS));
+            _atk = _atk + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.ATTACK_BONUS));
+            _def = _def + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.DEFENSE_BONUS));
+        }
+    }
+
     // @dev 查看套装ID的所有者
     function querySuitOwner(uint32 suitId) public view returns (address) {
        return _suitFlag[suitId];

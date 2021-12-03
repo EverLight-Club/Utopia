@@ -81,11 +81,30 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
         return character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
     }
 
-    function getAttributes(uint256 tokenId) public view returns (uint256 _power, uint256 _atk, 
-                                                                 uint256 _def, uint256 _dps) {
+    function getCharacterFeature(uint256 tokenId) public view returns (uint256 _hp, uint256 _atk, uint256 _def, uint256 _dps) {
         require(_exists(tokenId), "Character-getPower: tokenId not exists");
-        uint256 occu = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.OCCUPATION));
-        return character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
+        uint256 occu = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_OCCUPATION));
+        // 敏捷/力量/智力
+        uint256 strength = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_STRENGTH));
+        uint256 dexterity = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_DEXTERITY));
+        uint256 intelligence = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE));
+        // Warrior 战士、 Archer 射手、 Mage 法师
+        if(occu == uint256(EOCCUPATION.Archer)){
+            _dps = dexterity / 50;
+            _atk = dexterity / 4;
+            _def = dexterity / 10;
+        }
+        if(occu == uint256(EOCCUPATION.Warrior)){
+            _dps = dexterity / 15;
+            _atk = strength / 4;
+            _def = dexterity / 3;
+        }
+        if(occu == uint256(EOCCUPATION.Mage)){
+            _dps = dexterity / 10;
+            _atk = intelligence / 4;
+            _def = dexterity / 4;
+        }
+        _hp = strength;
     }
 
     function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {

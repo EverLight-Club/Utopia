@@ -19,4 +19,6 @@ interface IEquipment {
     function setSuitFlags(uint32 suitId, address _owner) external;
 
     function setNameFlags(string memory name, bool flags) external;
+
+    function getEquipmentFeature(uint256 characterId) external view returns (uint256 _atk, uint256 _def, uint256 _dps);
 }

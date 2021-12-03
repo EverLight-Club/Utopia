@@ -78,6 +78,16 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     return _config._totalSuitNum;
   }
 
+  function queryCharacterCE(uint256 tokenId) public view returns (uint256 _ce /*Combat Effectiveness*/) {
+    (uint256 _c_hp, uint256 _c_atk, uint256 _c_def, uint256 _c_dps) = ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER))).getCharacterFeature(tokenId);
+    (uint256 _e_atk, uint256 _e_def, uint256 _e_dps) = IEquipment(getAddress(uint32(CONTRACT_TYPE.EQUIPMENT))).getEquipmentFeature(tokenId);
+    // 0.5 * 体力 + 1 * 攻击力 + 1 * 防御 + 5 * 攻击速度
+    uint256 _atk = _c_atk + _e_atk;
+    uint256 _def = _c_def + _e_def;
+    uint256 _dps = _c_dps + _e_dps;
+    _ce = (5 * _c_hp / 10) + (1 * _atk) + (1 * _def) + (5 * _dps);
+  }
+
   function addNewSuit(uint256 suitId, string memory suitName, uint8 position, uint8 rare) external onlyDirectory {
     _config._totalSuitNum++;
     _partsTypeList[position][rare].push(LibEverLight.SuitInfo(suitName, uint32(suitId)));
