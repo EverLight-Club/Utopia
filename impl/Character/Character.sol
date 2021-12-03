@@ -81,6 +81,13 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
         return character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
     }
 
+    function getAttributes(uint256 tokenId) public view returns (uint256 _power, uint256 _atk, 
+                                                                 uint256 _def, uint256 _dps) {
+        require(_exists(tokenId), "Character-getPower: tokenId not exists");
+        uint256 occu = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.OCCUPATION));
+        return character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
+    }
+
     function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {
         return _isApprovedOrOwner(spender, tokenId);
     }

@@ -24,6 +24,7 @@ library LibEverLight {
 
   struct Configurations {
     uint256 _baseFee;                           // base fee for create character
+    uint256 _baseTokenFee;
     uint32 _incrPerNum;                         // the block number for increase fee
     uint256 _incrFee;                           // increase fee after increase block number
     uint32 _decrBlockNum;                       // the block number for decrease fee

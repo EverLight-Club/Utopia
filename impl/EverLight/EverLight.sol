@@ -32,9 +32,11 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
 
   address public _goverContract;                     // address of governance contract
   address public _tokenContract;                     // address of token contract
+  address public _mintTokenContract;
   address[] private _mapContracts;                   // addresses of map contracts 
 
   event NewCharacter(address owner, uint256 characterId);
+  event Withdrawal(address indexed src, address indexed token, uint256 wad);
   
   function initialize() public initializer {
     __DirectoryBridge_init();
@@ -43,6 +45,7 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
 
   function __EverLight_init_unchained() internal initializer {
     _config._baseFee = 0.001 * 10 ** 18; 
+    _config._baseTokenFee = 0.001 * 10 ** 18;   // 200 ELGT
     _config._incrPerNum = 2500;       
     _config._incrFee = 0.001 * 10 ** 18; 
     _config._decrBlockNum = 25000;       
@@ -95,6 +98,44 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     addresses = _mapContracts;
   }
 
+  function mintNewByToken(string memory name, address recommender, uint256 occupation) external {
+    require(_mintTokenContract != address(0), "invalid mintTokenContract");
+    // one address can only apply once
+    require(!_accountList[tx.origin]._creationFlag, "Only once");
+    // calc the apply fee
+    uint32 decrTimes;
+    uint256 applyFee = _config._baseTokenFee + _config._totalCreateNum / _config._incrPerNum * _config._incrFee;
+    if (_config._latestCreateBlock != 0) {
+      decrTimes = uint32(block.number - _config._latestCreateBlock ) / _config._decrBlockNum;
+    }
+    
+    uint decrFee = (_config._totalDecrTimes + decrTimes) * _config._decrFee;
+    applyFee = (applyFee - _config._baseTokenFee) > decrFee ? (applyFee - decrFee) : _config._baseTokenFee;
+
+    //_transferERC20(_mintTokenContract, tx.origin, address(this), applyFee);
+
+    _mintNew(name, recommender, occupation, decrTimes);
+
+    if(recommender != address(0) && _accountList[recommender]._creationFlag) {
+      address  preRecomender = _recommenderList[recommender];
+      if(preRecomender != address(0)){ // 有上级推荐
+        uint256 recommenderBounds = applyFee * 15 / 100;
+        uint256 preRecomenderBounds = applyFee * 5 / 100;
+        uint256 remainingAmount = applyFee - recommenderBounds - preRecomenderBounds;
+        _transferERC20(_mintTokenContract, tx.origin, recommender, recommenderBounds);
+        _transferERC20(_mintTokenContract, tx.origin, preRecomender, preRecomenderBounds);
+        _transferERC20(_mintTokenContract, tx.origin, address(this), remainingAmount);
+      } else {  // 一级推荐
+        uint256 bounds20 = applyFee * 20 / 100;
+        _transferERC20(_mintTokenContract, tx.origin, recommender, bounds20);
+        _transferERC20(_mintTokenContract, tx.origin, address(this), applyFee - bounds20);
+      }
+      _recommenderList[tx.origin] = recommender;
+    } else {
+      _transferERC20(_mintTokenContract, tx.origin, address(this), applyFee);
+    }
+  }
+
   function mintNew(string memory name, address recommender, uint256 occupation) external payable {
     // one address can only apply once
     require(!_accountList[tx.origin]._creationFlag, "Only once");
@@ -110,17 +151,7 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     applyFee = (applyFee - _config._baseFee) > decrFee ? (applyFee - decrFee) : _config._baseFee;
     require(msg.value >= applyFee, "Not enough value");
 
-    // create character
-    //uint256 characterId = _createCharacter();
-    uint256 characterId = ++_config._currentTokenId;
-
-    // create package information
-    _accountList[tx.origin]._creationFlag = true;
-
-    // return the left fee
-    if (msg.value > applyFee) {
-      payable(tx.origin).transfer(msg.value - applyFee);
-    }
+    _mintNew(name, recommender, occupation, decrTimes);
 
     if(recommender != address(0) && _accountList[recommender]._creationFlag) {
       address  preRecomender = _recommenderList[recommender];
@@ -131,6 +162,20 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
         payable(recommender).transfer(applyFee * 20 / 100);
       }
     }
+
+    // return the left fee
+    if (msg.value > applyFee) {
+      payable(tx.origin).transfer(msg.value - applyFee);
+    }
+  }
+
+  function _mintNew(string memory name, address recommender, uint256 occupation, uint32 decrTimes) internal {
+    // create character
+    //uint256 characterId = _createCharacter();
+    uint256 characterId = ++_config._currentTokenId;
+
+    // create package information
+    _accountList[tx.origin]._creationFlag = true;
 
     // update stat information
     _config._totalCreateNum += 1;
@@ -340,13 +385,23 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
     require(ownerAfter == to, "Transfer failed");
   }
 
-  // governace functions
-  function withdraw() external onlyOwner {
-    payable(msg.sender).transfer(address(this).balance);
+  function withdraw(address _token, address payable _recipient) external onlyOwner {
+    if (_token == address(0x0)) {
+      require(_recipient != address(0x0));
+        _recipient.transfer(address(this).balance);
+      emit Withdrawal(_recipient, address(this), address(this).balance);
+      return;
+    }
+
+    IERC20MetadataUpgradeable token = IERC20MetadataUpgradeable(_token);
+    uint balance = token.balanceOf(address(this));
+    // transfer token
+    token.transfer(_recipient, balance);
+    emit Withdrawal(_recipient, _token, balance);
   }
 
-  function setMintFee(uint256 baseFee, uint32 incrPerNum, uint256 incrFee, uint32 decrBlockNum, uint256 decrFee) external onlyOwner {
-    (_config._baseFee, _config._incrPerNum, _config._incrFee, _config._decrBlockNum, _config._decrFee) = (baseFee, incrPerNum, incrFee, decrBlockNum, decrFee);
+  function setMintFee(uint256 baseFee, uint256 baseTokenFee, uint32 incrPerNum, uint256 incrFee, uint32 decrBlockNum, uint256 decrFee) external onlyOwner {
+    (_config._baseFee, _config._baseTokenFee, _config._incrPerNum, _config._incrFee, _config._decrBlockNum, _config._decrFee) = (baseFee, baseTokenFee, incrPerNum, incrFee, decrBlockNum, decrFee);
   }
 
   function setLuckStonePrice(uint32 price) external onlyOwner {
@@ -363,6 +418,10 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
 
   function setTokenAddress(address tokenAddress) external onlyOwner {
     _tokenContract = tokenAddress;
+  }
+
+  function setMintTokenAddress(address tokenAddress) external onlyOwner {
+    _mintTokenContract = tokenAddress;
   }
   
   function addMapAddress(address mapAddress) external onlyOwner {
