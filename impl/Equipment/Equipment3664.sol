@@ -5,9 +5,12 @@ pragma solidity ^0.8.0;
 import "../../token/ERC3664/ERC3664Upgradeable.sol";
 import "../Directory/DirectoryBridge.sol";
 import "../../interfaces/IEquipment.sol";
+import "../../utils/Strings.sol";
 
 contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
     
+    using Strings for uint256;
+
     mapping(uint256 => mapping(string => string)) _extendAttr;  // 
 
     uint256 public _totalToken;
@@ -150,7 +153,31 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         return texts;
     }
     
-    function _getInitAttributeAmounts(uint256 tokenId, uint256 position, uint256 level, uint256 rarity, uint256 suitId) internal pure returns(uint256[] memory){
+    function _getInitAttributeAmounts(uint256 tokenId, uint256 position, uint256 level, uint256 rarity, uint256 suitId) internal view returns(uint256[] memory){
+        // 1、根据稀有度确定需要设置的属性；
+        // 2、根据等级计算属性的值，有加成的计算；
+        uint256[] memory attrs = new uint256[](6);
+        {   
+            (
+                attrs[0],attrs[1],attrs[2],attrs[3],attrs[4],attrs[5]
+            )  = 
+            (
+                uint256(EQUIPMENTATTR.DEXTERITY_BONUS), uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS), 
+                uint256(EQUIPMENTATTR.CONSTITUTION_BONUS), uint256(EQUIPMENTATTR.ATTACK_BONUS), 
+                uint256(EQUIPMENTATTR.DEFENSE_BONUS), uint256(EQUIPMENTATTR.SPEED_BONUS)
+            ); 
+        }       
+        uint256[] memory indexes = new uint256[](rarity);
+        {
+            for(uint256 i = 0; i < rarity; i++){
+                indexes[i] = _getRandom(uint256(i).toString()) % attrs.length;
+            }
+        }
+        
+        uint256 basePower = uint256(10 * (125 ** level) / (100 ** level));
+        uint256 randPower = uint256(basePower < 10 ? _getRandom(uint256(256).toString()) % 1 : _getRandom(uint256(256).toString()) % (basePower / 10));
+        uint256 attrValue = basePower + randPower;
+
         uint256[] memory amounts = new uint256[](21);
         {
             (
@@ -177,12 +204,19 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
             );
         }
         {
+            // 武器的加成属性，需要按照随机值设定
             (
                 amounts[15],amounts[16],amounts[17],amounts[18],amounts[19],amounts[20]  
             )  = 
             (
-                0, 0, 0, 100, 100, 100
+                0, 0, 0, 0, 0, 0
             );
+        }
+
+        {
+            for(uint256 n = 0; n < indexes.length; n++){
+                amounts[attrs[indexes[n]]] = attrValue;
+            }
         }
         return amounts;
     }
