@@ -206,7 +206,9 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         uint256[] memory indexes = new uint256[](rarityIndex);
         {
             for(uint256 i = 0; i < indexes.length; i++){
-                indexes[i] = _getRandom(uint256(i).toString()) % attrs.length;
+                // uint256(keccak256(abi.encodePacked(tokenId, i)))
+                indexes[i] = _getRandom(uint256(keccak256(abi.encodePacked(tokenId, i))).toString()) % attrs.length;
+                //indexes[i] = _getRandom(uint256(i).toString()) % attrs.length;
             }
         }
 
