@@ -37,10 +37,10 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
                                     uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
                                     uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), uint256(CHARACTERATTR.CHARACTER_POINTS), 
                                     uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
-                                    uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), 
+                                    uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_PATIENCE), 
                                     uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)];
-        string[12] memory names = ["name", "occupation", "sex", "level", "experience", "points", "strength", "DEXTERITY", "intelligence", "CONSTITUTION", "luck", "gold"];
-        string[12] memory symbols = ["NAME", "OCCUPATION", "SEX", "LEVEL", "EXPERIENCE", "POINTS", "STRENGTH", "DEXTERITY", "INTELLIGENCE", "CONSTITUTION", "LUCK", "GOLD"];
+        string[12] memory names = ["name", "occupation", "sex", "level", "experience", "points", "strength", "DEXTERITY", "intelligence", "PATIENCE", "luck", "gold"];
+        string[12] memory symbols = ["NAME", "OCCUPATION", "SEX", "LEVEL", "EXPERIENCE", "POINTS", "STRENGTH", "DEXTERITY", "INTELLIGENCE", "PATIENCE", "LUCK", "GOLD"];
         string[12] memory uris = ["", "", "", "", "", "", "", "", "", "", "", ""];*/
         //_mintBatch(attrIds, names, symbols, uris);
     }
@@ -81,30 +81,35 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
         return character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_LUCK));
     }
 
-    function getCharacterFeature(uint256 tokenId) public view returns (uint256 _hp, uint256 _atk, uint256 _def, uint256 _dps) {
+    function getCharacterCE(uint256 tokenId) public view returns (uint256 _ce) {
         require(_exists(tokenId), "Character-getPower: tokenId not exists");
         uint256 occu = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_OCCUPATION));
         // 敏捷/力量/智力
         uint256 strength = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_STRENGTH));
-        uint256 dexterity = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_DEXTERITY));
-        uint256 intelligence = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE));
+        uint256 dexterity /*敏捷*/ = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_DEXTERITY));
+        uint256 intelligence /*智力*/= character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE));
+        uint256 patience/*耐力*/ = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_PATIENCE));
+        (uint256 _hp, uint256 _dps, uint256 _atk, uint256 _def) = (0, 0, 0, 0);
         // Warrior 战士、 Archer 射手、 Mage 法师
         if(occu == uint256(EOCCUPATION.Archer)){
-            _dps = dexterity / 50;
-            _atk = dexterity / 4;
-            _def = dexterity / 10;
+            _dps = dexterity * 5;
+            _atk = dexterity * 5;
+            _def = intelligence * 5;
+            _hp  = patience * 10;
         }
         if(occu == uint256(EOCCUPATION.Warrior)){
-            _dps = dexterity / 15;
-            _atk = strength / 4;
-            _def = dexterity / 3;
+            _dps = dexterity * 5;
+            _atk = strength * 5;
+            _def = intelligence * 5;
+            _hp  = patience * 10;
         }
         if(occu == uint256(EOCCUPATION.Mage)){
-            _dps = dexterity / 10;
-            _atk = intelligence / 4;
-            _def = dexterity / 4;
+            _dps = dexterity * 5;
+            _atk = intelligence * 5;
+            _def = intelligence * 5;
+            _hp  = patience * 10;
         }
-        _hp = strength;
+        _ce = (_atk + _dps + _def + _hp) * 2;
     }
 
     function isApprovedOrOwner(address spender, uint256 tokenId) public view returns (bool) {
@@ -238,10 +243,10 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
         _extendAttr[tokenId][key] = value;
     }
 
-    function assignPoints(uint256 tokenId, uint32 strength, uint32 DEXTERITY, uint32 intelligence, uint32 CONSTITUTION) external {
+    function assignPoints(uint256 tokenId, uint32 strength, uint32 DEXTERITY, uint32 intelligence, uint32 PATIENCE) external {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not owner or approver");
 
-        uint256 totalPoints = uint256(strength) + uint256(DEXTERITY) + uint256(intelligence) + uint256(CONSTITUTION);
+        uint256 totalPoints = uint256(strength) + uint256(DEXTERITY) + uint256(intelligence) + uint256(PATIENCE);
         uint256 currPoints = character3664.balanceOf(tokenId, uint256(CHARACTERATTR.CHARACTER_POINTS));
         require(totalPoints <= currPoints, "Not enough points");
 
@@ -249,7 +254,7 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
         character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_STRENGTH), strength, "", false);
         character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_DEXTERITY), DEXTERITY, "", false);
         character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), intelligence, "", false);
-        character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), CONSTITUTION, "", false);
+        character3664.attach(tokenId, uint256(CHARACTERATTR.CHARACTER_PATIENCE), PATIENCE, "", false);
     }
 
     // 考虑：需要核对场景
@@ -277,7 +282,7 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
                 uint256(CHARACTERATTR.CHARACTER_STRENGTH), 
                 uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
                 uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), 
-                uint256(CHARACTERATTR.CHARACTER_CONSTITUTION)                                  
+                uint256(CHARACTERATTR.CHARACTER_PATIENCE)                                  
             );
         }
         bytes[] memory texts = new bytes[](7);
@@ -289,7 +294,7 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
         currValue[3] = 100;         // CHARACTER_STRENGTH
         currValue[4] = 100;         // CHARACTER_DEXTERITY
         currValue[5] = 100;         // CHARACTER_INTELLIGENCE
-        currValue[6] = 100;         // CHARACTER_CONSTITUTION
+        currValue[6] = 100;         // CHARACTER_PATIENCE
         character3664.batchAttach(tokenId, attrIds, currValue, texts);
     }
 
@@ -298,7 +303,7 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
     //                                 uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
     //                                 uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), uint256(CHARACTERATTR.CHARACTER_POINTS), 
     //                                 uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
-    //                                 uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), 
+    //                                 uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_PATIENCE), 
     //                                 uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)];
         
     //     uint256[] memory amounts = [1, uint256(occupation), uint256(sex), 1, 0, 0, INIT_ATTR[uint256(occupation)][0], INIT_ATTR[occupation][1], INIT_ATTR[occupation][2], INIT_ATTR[occupation][3], 0, 0];
@@ -330,7 +335,7 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
     //         (
     //             uint256(CHARACTERATTR.CHARACTER_POINTS), 
     //             uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
-    //             uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION)
+    //             uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_PATIENCE)
     //         );
     //     }
     //     {
@@ -416,6 +421,10 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
         uint256 tokenId,
         bytes calldata data
     ) external override returns (bytes4) {
+        require(operator != address(0), "invalid operator");
+        require(from != address(0), "invalid from");
+        require(tokenId != 0, "invalid tokenId");
+        require(data.length != 0, "invalid data");
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }
 }

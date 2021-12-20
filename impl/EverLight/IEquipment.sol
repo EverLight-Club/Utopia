@@ -20,5 +20,5 @@ interface IEquipment {
 
     function setNameFlags(string memory name, bool flags) external;
 
-    function getEquipmentFeature(uint256 characterId) external view returns (uint256 _atk, uint256 _def, uint256 _dps);
+    function getEquipmentCE(uint256 characterId) external view returns (uint256 _ce);
 }

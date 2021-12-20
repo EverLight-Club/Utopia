@@ -20,7 +20,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     using Strings for uint256;
     
     mapping(uint256 => uint256[]) _characterEquipments;         // characterId => []equipmentId
-    mapping(uint256 => mapping(string => string)) _extendAttr;  // 
+    //mapping(uint256 => mapping(string => string)) _extendAttr;  // 
     mapping(uint256 => uint256) _equipmentCharacters;           // equipmentId => characterId
     mapping(uint32 => address) _suitFlag;                       // check suit is exists
     mapping(uint256 => bool) _nameFlag;                         // parts name is exists
@@ -42,7 +42,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         equipment3664 = Equipment3664(_equipment3664);
     }
 
-    function queryEquipmentByAddress(address addr, uint256 startIndex) external view returns(uint256[] memory equipmentIdList, uint256 lastIndex){
+    /*function queryEquipmentByAddress(address addr, uint256 startIndex) external view returns(uint256[] memory equipmentIdList, uint256 lastIndex){
         uint256 count = ERC721Upgradeable.balanceOf(addr);
         equipmentIdList = new uint256[](10);    // default returns 20 records.
         uint256 index = 0;
@@ -59,7 +59,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
             index++;
         }
         return (equipmentIdList, lastIndex);
-    }
+    }*/
 
     function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory output) {
         require(_exists(tokenId), 'Token does not exist');
@@ -222,16 +222,27 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         _suitFlag[suitId] = _owner;
     }
 
-    function getEquipmentFeature(uint256 characterId) public view returns (uint256 _atk, uint256 _def, uint256 _dps) {
+    // Combat Effectiveness => CE
+    function getEquipmentCE(uint256 characterId) public view returns (uint256 _ce) {
         if(_characterEquipments[characterId].length == 0){
-            return (0, 0, 0);
+            return 0;
         }
+        (uint256 _strength, uint256 _dexterity, uint256 _intelligence, uint256 _patience) = (0, 0, 0, 0);
+        (uint256 _dps, uint256 _atk, uint256 _def, uint256 _hp) = (0, 0, 0, 0);
         uint256[] memory equipmentList = _characterEquipments[characterId];
-        for(uint256 i = 0; i < equipmentList.length; i++){
-            _dps = _dps + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.SPEED_BONUS));
-            _atk = _atk + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.ATTACK_BONUS));
-            _def = _def + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.DEFENSE_BONUS));
+        {
+            for(uint256 i = 0; i < equipmentList.length; i++){
+                _strength = _strength + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.STRENGTH_BONUS));
+                _dexterity = _dexterity + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.DEXTERITY_BONUS));
+                _intelligence = _intelligence + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS));
+                _patience = _patience + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.PATIENCE_BONUS));
+                _dps = _dps + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.SPEED_BONUS));
+                _atk = _atk + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.ATTACK_BONUS));
+                _def = _def + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.DEFENSE_BONUS));
+                _hp = _hp + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.HP_BONUS));
+            }
         }
+        _ce = (_atk + _dps + _hp + _def) * 2 + (_strength + _dexterity + _intelligence + _patience) * 4;
     }
 
     // @dev 查看套装ID的所有者
@@ -256,14 +267,14 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         return _characterEquipments[characterId];
     }
 
-    function getExtendAttr(uint256 tokenId, string memory key) external view returns (string memory) {
+    /*function getExtendAttr(uint256 tokenId, string memory key) external view returns (string memory) {
         require(_exists(tokenId), "Token not exist");
         return _extendAttr[tokenId][key];
-    }
+    }*/
 
-    function setExtendAttr(uint256 tokenId, string memory key, string memory value) external onlyDirectory {
+    /*function setExtendAttr(uint256 tokenId, string memory key, string memory value) external onlyDirectory {
         _extendAttr[tokenId][key] = value;
-    }
+    }*/
 
     function wear(uint256 characterId, uint256[] memory tokenId) external {
         ICharacter character = ICharacter(getAddress(uint32(CONTRACT_TYPE.CHARACTER)));
@@ -276,7 +287,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
          attrIds[5],attrIds[6]) = (uint256(CHARACTERATTR.CHARACTER_LEVEL), uint256(CHARACTERATTR.CHARACTER_SEX), 
                                     uint256(CHARACTERATTR.CHARACTER_OCCUPATION), uint256(CHARACTERATTR.CHARACTER_STRENGTH), 
                                     uint256(CHARACTERATTR.CHARACTER_DEXTERITY), uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), 
-                                    uint256(CHARACTERATTR.CHARACTER_CONSTITUTION));*/
+                                    uint256(CHARACTERATTR.CHARACTER_PATIENCE));*/
         //uint256[] memory characterAttrs = character.getBatchAttr(characterId, attrIds);
         uint256[] memory characterAttrs = new uint256[](0);
         for (uint i = 0; i < tokenId.length; ++i) {
@@ -295,7 +306,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
             uint256(EQUIPMENTATTR.LEVEL_LIMIT), uint256(EQUIPMENTATTR.SEX_LIMIT), 
             uint256(EQUIPMENTATTR.OCCUPATION_LIMIT), uint256(EQUIPMENTATTR.STRENGTH_LIMIT), 
             uint256(EQUIPMENTATTR.DEXTERITY_LIMIT), uint256(EQUIPMENTATTR.INTELLIGENCE_LIMIT),
-            uint256(EQUIPMENTATTR.CONSTITUTION_LIMIT), uint256(EQUIPMENTATTR.EQUIPMENT_POSITION)
+            uint256(EQUIPMENTATTR.PATIENCE_LIMIT), uint256(EQUIPMENTATTR.EQUIPMENT_POSITION)
         );
         uint256[] memory limitValue = equipment3664.balanceOfBatch(tokenId, attrIds);
         //require(canPutOn(characterAttrs, limitValue), "Limited to put on");
@@ -373,11 +384,11 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         
         // basepower = (basepower * 1.25 ** level) * +1.1
         // 查看预先定义的稀有度与power的关系 position => rare => power ，该配置从 EverLight 合约获取
-        IEverLight everLight = IEverLight(getAddress(uint32(CONTRACT_TYPE.EVER_LIGHT)));
-        uint32 basePower = everLight.queryPower(uint8(firstAttrAmount[2]), uint8(firstAttrAmount[4]));
+        //IEverLight everLight = IEverLight(getAddress(uint32(CONTRACT_TYPE.EVER_LIGHT)));
+        //uint32 basePower = everLight.queryPower(uint8(firstAttrAmount[2]), uint8(firstAttrAmount[4]));
 
         //todo: 此处的算力值还未进行有效的赋值，需要进行处理
-        basePower = uint32(basePower * (125 ** (firstAttrAmount[3] - 1)) / (100 ** (firstAttrAmount[3] - 1)));
+        //basePower = uint32(basePower * (125 ** (firstAttrAmount[3] - 1)) / (100 ** (firstAttrAmount[3] - 1)));
         //uint32 randPower = uint32(basePower < 10 ? _getRandom(uint256(256).toString()) % 1 : _getRandom(uint256(256).toString()) % (basePower / 10));
 
         // 装备合成，原有装备销毁，生成新的装备

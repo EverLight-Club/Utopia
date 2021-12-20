@@ -27,21 +27,6 @@ contract Character3664 is ICharacter, ERC3664Upgradeable, DirectoryBridge {
     }
 
     function __Character_init_unchained() internal initializer {
-        /*uint256[] memory attrIds = new uint256[](12);
-        string[] memory names = new string[](12);
-        string[] memory symbols = new string[](12);
-        string[] memory uris = new string[](12);*/
-        
-        /*uint256[] memory attrIds = [uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
-                                    uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
-                                    uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), uint256(CHARACTERATTR.CHARACTER_POINTS), 
-                                    uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
-                                    uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), 
-                                    uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)];
-        string[12] memory names = ["name", "occupation", "sex", "level", "experience", "points", "strength", "DEXTERITY", "intelligence", "CONSTITUTION", "luck", "gold"];
-        string[12] memory symbols = ["NAME", "OCCUPATION", "SEX", "LEVEL", "EXPERIENCE", "POINTS", "STRENGTH", "DEXTERITY", "INTELLIGENCE", "CONSTITUTION", "LUCK", "GOLD"];
-        string[12] memory uris = ["", "", "", "", "", "", "", "", "", "", "", ""];*/
-        //_mintBatch(attrIds, names, symbols, uris);
     }
 
     function initAttributeForCharacter(uint256 tokenId, string memory name, uint256 occupation, uint256 sex) external onlyDirectory { 
@@ -87,20 +72,6 @@ contract Character3664 is ICharacter, ERC3664Upgradeable, DirectoryBridge {
     }
 
     function _initAttribute(uint256 tokenId, string memory name, uint256 occupation, uint256 sex) internal {
-       /* uint256[] memory attrIds = [uint256(CHARACTERATTR.CHARACTER_NAME), uint256(CHARACTERATTR.CHARACTER_OCCUPATION), 
-                                    uint256(CHARACTERATTR.CHARACTER_SEX), uint256(CHARACTERATTR.CHARACTER_LEVEL), 
-                                    uint256(CHARACTERATTR.CHARACTER_EXPERIENCE), uint256(CHARACTERATTR.CHARACTER_POINTS), 
-                                    uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
-                                    uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION), 
-                                    uint256(CHARACTERATTR.CHARACTER_LUCK), uint256(CHARACTERATTR.CHARACTER_GOLD)];
-        
-        uint256[] memory amounts = [1, uint256(occupation), uint256(sex), 1, 0, 0, INIT_ATTR[uint256(occupation)][0], INIT_ATTR[occupation][1], INIT_ATTR[occupation][2], INIT_ATTR[occupation][3], 0, 0];
-        
-        bytes[] memory texts = [bytes(name), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes(""), bytes("")];
-        */
-        //uint256[] memory attrIds = new uint256[](12);
-        //uint256[] memory amounts = new uint256[](12);
-        //bytes[] memory texts = new bytes[](12);
         _batchAttach(tokenId, _getInitAttributeAttrIds(), _getInitAttributeAmounts(occupation, sex), _getInitAttributeTexts(name));
     }
 
@@ -123,7 +94,7 @@ contract Character3664 is ICharacter, ERC3664Upgradeable, DirectoryBridge {
             (
                 uint256(CHARACTERATTR.CHARACTER_POINTS), 
                 uint256(CHARACTERATTR.CHARACTER_STRENGTH), uint256(CHARACTERATTR.CHARACTER_DEXTERITY), 
-                uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_CONSTITUTION)
+                uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), uint256(CHARACTERATTR.CHARACTER_PATIENCE)
             );
         }
         {
@@ -138,13 +109,15 @@ contract Character3664 is ICharacter, ERC3664Upgradeable, DirectoryBridge {
     }
 
     function _getInitAttributeAmounts(uint256 occupation, uint256 sex) internal pure returns(uint256[] memory) {
+        // 经验值：等级为1进行计算经验值；
+        //玩家当前等级经验=INT（（ROUND((玩家当前等级^3*0.004)+玩家当前等级*INT(玩家当前等级*0.02)+玩家当前等级*2+10,0)）*（INT((玩家当前等级^3*0.0003+玩家当前等级^2*0.002+玩家当前等级*(INT(玩家当前等级/20)))+玩家当前等级/2+1)））
         uint256[] memory amounts = new uint256[](12);
         {
             (
                 amounts[0], amounts[1], amounts[2], amounts[3], amounts[4]
             ) = 
             (
-                1, uint256(occupation), sex, 1, 0
+                1, uint256(occupation), sex, 1, _calcExperienceByLevel(1)
             );
         }
         {
@@ -152,15 +125,26 @@ contract Character3664 is ICharacter, ERC3664Upgradeable, DirectoryBridge {
                 amounts[5], amounts[6], amounts[7], amounts[8], amounts[9]
             ) = 
             (
-                0, 100, 100, 100, 100
+                0, 0, 0, 0, 0
             );
         }
-        {(
-            amounts[10],amounts[11]
-        ) = 
-        (
-            0, 0
-        );}
+        {
+            (
+                amounts[10],amounts[11]
+            ) = 
+            (
+                0, 0
+            );
+        }
+        if(occupation == uint256(EOCCUPATION.Warrior) ){ // 战士
+            (amounts[6], amounts[7], amounts[8], amounts[9]) = (30, 20, 15, 20);
+        }
+        if(occupation == uint256(EOCCUPATION.Mage) ){ // 法师 Mage
+            (amounts[6], amounts[7], amounts[8], amounts[9]) = (15, 20, 30, 20);
+        }
+        if(occupation == uint256(EOCCUPATION.Archer)){ // 弓手 Archer
+            (amounts[6], amounts[7], amounts[8], amounts[9]) = (20, 30, 20, 15);
+        }
         return amounts;
     }
 
@@ -185,5 +169,13 @@ contract Character3664 is ICharacter, ERC3664Upgradeable, DirectoryBridge {
             bytes(""), bytes("")
         );}
         return texts;
+    }
+
+    function _calcExperienceByLevel(uint256 level) pure internal returns(uint256 experience) {
+        //玩家当前等级经验=INT（（ROUND((玩家当前等级^3*0.004)+玩家当前等级*INT(玩家当前等级*0.02)+玩家当前等级*2+10,0)）*（INT((玩家当前等级^3*0.0003+玩家当前等级^2*0.002+玩家当前等级*(INT(玩家当前等级/20)))+玩家当前等级/2+1)））
+        // (玩家当前等级^3*0.004)+玩家当前等级*INT(玩家当前等级*0.02)+玩家当前等级*2+10
+        uint256 splitOne = 4 * (level ** 3) / 1000 + level * 2 / 100 + level * 2 + 10;
+        uint256 splitTwo = level ** 3 * 3 / 10000 + level ** 2 * 2 / 1000 + level * level / 20 + level / 2 + 1;
+        experience = splitOne * splitTwo;
     }
 }

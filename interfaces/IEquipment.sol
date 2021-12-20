@@ -21,15 +21,16 @@ interface IEquipment {
         STRENGTH_LIMIT,
         DEXTERITY_LIMIT,
         INTELLIGENCE_LIMIT,
-        CONSTITUTION_LIMIT,
+        PATIENCE_LIMIT,
 
         STRENGTH_BONUS,
         DEXTERITY_BONUS,
         INTELLIGENCE_BONUS,
-        CONSTITUTION_BONUS,
+        PATIENCE_BONUS,
         ATTACK_BONUS,
         DEFENSE_BONUS,
-        SPEED_BONUS
+        SPEED_BONUS,
+        HP_BONUS
     }
 
     event NewEquipment(address indexed owner, uint256 tokenId, uint256 equipmentId);
