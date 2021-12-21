@@ -70,11 +70,11 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     function tokenURIForEquipment(uint256 tokenId) internal view returns (string memory output) {
-        string[] memory parts = new string[](2 * 20 + 3);
+        string[] memory parts = new string[](2 * 22 + 3);
         parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } </style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';     
         uint256 index = 1;
         uint256 yValue = 20;
-        for(uint i = 0; i < 20; i++) {
+        for(uint i = 0; i < 22; i++) {
             yValue = yValue + 20;
             if(i == 1){
                 parts[index] = pluck(tokenId, i, true);
