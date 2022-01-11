@@ -92,6 +92,23 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
 
     }
 
+    function getAmountByTokenIdList(uint256[] memory equipmentList) public view returns (uint256 _ce) {
+        (uint256 _strength, uint256 _dexterity, uint256 _intelligence, uint256 _patience) = (0, 0, 0, 0);
+        (uint256 _dps, uint256 _atk, uint256 _def, uint256 _hp) = (0, 0, 0, 0);
+        {
+            for(uint256 i = 0; i < equipmentList.length; i++){
+                _strength = _strength + balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.STRENGTH_BONUS));
+                _dexterity = _dexterity + balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.DEXTERITY_BONUS));
+                _intelligence = _intelligence + balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.INTELLIGENCE_BONUS));
+                _patience = _patience + balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.PATIENCE_BONUS));
+                _dps = _dps + balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.SPEED_BONUS));
+                _atk = _atk + balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.ATTACK_BONUS));
+                _def = _def + balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.DEFENSE_BONUS));
+                _hp = _hp + balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.HP_BONUS));
+            }
+        }
+        _ce = (_atk + _dps + _hp + _def) * 2 + (_strength + _dexterity + _intelligence + _patience) * 4;
+    }
 
     function attach(
         uint256 tokenId,
@@ -103,7 +120,7 @@ contract Equipment3664 is DirectoryBridge, ERC3664Upgradeable, IEquipment {
         _attach(tokenId, attrId, amount, text, isPrimary);
     }
 
-    function mintBatch(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyDirectory {
+    function mintBatch(uint256[] memory attrIds, string[] memory names, string[] memory symbols, string[] memory uris) external onlyOwner {
         _mintBatch(attrIds, names, symbols, uris);
     }
 

@@ -38,7 +38,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     function setEquipment3664(address _equipment3664) external onlyOwner {
-        require(_equipment3664 != address(0), "address is nil address");
+        //require(_equipment3664 != address(0), "address is nil address");
         equipment3664 = Equipment3664(_equipment3664);
     }
 
@@ -213,7 +213,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
 
     // @dev 销毁指定ID的装备
     function burnEquipment(uint256 tokenId) external onlyDirectory {
-        require(_exists(tokenId), "!exists");
+        //require(_exists(tokenId), "!exists");
         require(ownerOf(tokenId) == tx.origin, "!owner");
         _burn(tokenId); // burn 721, not 3664
     }
@@ -227,7 +227,10 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
         if(_characterEquipments[characterId].length == 0){
             return 0;
         }
-        (uint256 _strength, uint256 _dexterity, uint256 _intelligence, uint256 _patience) = (0, 0, 0, 0);
+        uint256[] memory equipmentList = _characterEquipments[characterId];
+        _ce = equipment3664.getAmountByTokenIdList(equipmentList);
+
+        /*(uint256 _strength, uint256 _dexterity, uint256 _intelligence, uint256 _patience) = (0, 0, 0, 0);
         (uint256 _dps, uint256 _atk, uint256 _def, uint256 _hp) = (0, 0, 0, 0);
         uint256[] memory equipmentList = _characterEquipments[characterId];
         {
@@ -242,7 +245,7 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
                 _hp = _hp + equipment3664.balanceOf(equipmentList[i], uint256(EQUIPMENTATTR.HP_BONUS));
             }
         }
-        _ce = (_atk + _dps + _hp + _def) * 2 + (_strength + _dexterity + _intelligence + _patience) * 4;
+        _ce = (_atk + _dps + _hp + _def) * 2 + (_strength + _dexterity + _intelligence + _patience) * 4;*/
     }
 
     // @dev 查看套装ID的所有者
@@ -289,14 +292,14 @@ contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgr
                                     uint256(CHARACTERATTR.CHARACTER_DEXTERITY), uint256(CHARACTERATTR.CHARACTER_INTELLIGENCE), 
                                     uint256(CHARACTERATTR.CHARACTER_PATIENCE));*/
         //uint256[] memory characterAttrs = character.getBatchAttr(characterId, attrIds);
-        uint256[] memory characterAttrs = new uint256[](0);
+        /*uint256[] memory characterAttrs = new uint256[](0);*/
         for (uint i = 0; i < tokenId.length; ++i) {
             require(_isApprovedOrOwner(_msgSender(), tokenId[i]), "Equipment not owner or approver");
-            putOnOne(characterId, characterAttrs, tokenId[i]);
+            putOnOne(characterId, /*characterAttrs,*/ tokenId[i]);
         }
     }
 
-    function putOnOne(uint256 characterId, uint256[] memory characterAttrs, uint256 tokenId) internal {
+    function putOnOne(uint256 characterId, /*uint256[] memory characterAttrs,*/ uint256 tokenId) internal {
         uint256[] memory attrIds = new uint256[](8);
         (
             attrIds[0], attrIds[1], attrIds[2], attrIds[3],

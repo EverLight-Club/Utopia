@@ -415,16 +415,17 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
         }
     }
 
+    function withdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(msg.sender).transfer(balance);
+    }
+
     function onERC721Received(
         address operator,
         address from,
         uint256 tokenId,
         bytes calldata data
     ) external override returns (bytes4) {
-        require(operator != address(0), "invalid operator");
-        require(from != address(0), "invalid from");
-        require(tokenId != 0, "invalid tokenId");
-        require(data.length != 0, "invalid data");
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }
 }
