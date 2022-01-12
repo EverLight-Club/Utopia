@@ -33,7 +33,7 @@ contract EverLight is Initializable, Context, DirectoryBridge, ReentrancyGuard {
   address public _goverContract;                     // address of governance contract
   address public _tokenContract;                     // address of token contract
   address public _mintTokenContract;
-  address[] private _mapContracts;                   // addresses of map contracts 
+  address[] private _mapContracts;                   // addresses of map contracts. 
 
   event NewCharacter(address owner, uint256 characterId);
   event Withdrawal(address indexed src, address indexed token, uint256 wad);

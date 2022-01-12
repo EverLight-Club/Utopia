@@ -6,7 +6,7 @@ import "../../proxy/ProxyAdmin.sol";
 
 contract UtopiaAdmin is ProxyAdmin {
     /**
-     * @dev Initializes owner of the admin contract
+     * @dev Initializes owner of the admin contract.
      */
     constructor() ProxyAdmin() {
         

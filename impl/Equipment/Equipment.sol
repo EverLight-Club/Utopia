@@ -16,7 +16,7 @@ import "./Equipment3664.sol";
 import "../../utils/Base64.sol";
 
 contract Equipment is Ownable, IEquipment, DirectoryBridge, ERC721EnumerableUpgradeable, IERC721ReceiverUpgradeable {
-    
+    //
     using Strings for uint256;
     
     mapping(uint256 => uint256[]) _characterEquipments;         // characterId => []equipmentId

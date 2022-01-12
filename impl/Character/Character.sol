@@ -28,6 +28,7 @@ contract Character is Ownable, ICharacter, DirectoryBridge, ERC721EnumerableUpgr
     }
 
     function __Character_init_unchained() internal initializer {
+        //
         /*uint256[] memory attrIds = new uint256[](12);
         string[] memory names = new string[](12);
         string[] memory symbols = new string[](12);

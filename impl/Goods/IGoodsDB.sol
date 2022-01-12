@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 /**
  * @dev Interface of the Equipment.
+ * 
  */
 interface IGoodsDB {
     event NewGoods(address indexed creator, uint256 goodsId, string goodsName);

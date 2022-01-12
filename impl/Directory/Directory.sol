@@ -7,7 +7,7 @@ import "../../proxy/OwnableUpgradeable.sol";
 import "../../interfaces/IDirectory.sol";
 
 contract Directory is IDirectory, Initializable, OwnableUpgradeable {
-    
+    //
     function initialize() public initializer {
         __Ownable_init_unchained();
     }
