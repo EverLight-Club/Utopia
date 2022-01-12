@@ -24,8 +24,8 @@ library Math {
     }
 
     /**
-     * @dev Returns the average of two numbers. The result is rounded towards
-     * zero.
+     * @dev Returns the average of two numbers. The result is rounded towards zero.
+     * 
      */
     function average(uint256 a, uint256 b) internal pure returns (uint256) {
         // (a + b) / 2 can overflow.

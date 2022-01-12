@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 library Genesis {
+	// base price
     uint256 public constant MINT_PRICE = 25 * 10 ** 18;
     uint256 public constant WASH_POINTS_PRICE = 15 * 10 ** 18;
     uint256 public constant RECOMMENDER_REWARD = 50;

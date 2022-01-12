@@ -20,10 +20,10 @@ import "../ERC165/ERC165Upgradeable.sol";
 contract ERC1155Upgradeable is Initializable, Context, ERC165Upgradeable, IERC1155Upgradeable, IERC1155MetadataURIUpgradeable {
     using Address for address;
 
-    // Mapping from token ID to account balances
+    // Mapping from token ID to account balances.
     mapping(uint256 => mapping(address => uint256)) private _balances;
 
-    // Mapping from account to operator approvals
+    // Mapping from account to operator approvals.
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     // Used as the URI for all token types by relying on ID substitution, e.g. https://token-cdn-domain/{id}.json

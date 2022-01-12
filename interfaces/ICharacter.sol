@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
  * @dev Interface of the Character.
  */
 interface ICharacter {
+    // for character
     enum CHARACTERATTR {
         CHARACTER_NAME,
         CHARACTER_OCCUPATION,
